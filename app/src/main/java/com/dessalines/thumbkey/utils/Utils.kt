@@ -1250,12 +1250,17 @@ fun performKeyAction(
             val enable = action.enable
             Log.d(TAG, "Toggling Emoji: $enable")
             if (enable && ime.isFloatingModeEnabled()) {
-                keyboardSettings.textProcessor?.handleFinishInput(ime)
-                ime.shouldRevertToFloating = true
-                ime.pendingDockedMode = KeyboardMode.EMOJI
-                // Defer so the current touch handler finishes before
-                // the floating view is removed from the window.
-                Handler(ime.mainLooper).post { ime.anchorToBottom() }
+                if (ime.isExpandInFloatingEnabled()) {
+                    // Keep floating, just switch mode within the floating window
+                    keyboardSettings.textProcessor?.handleFinishInput(ime)
+                    onToggleEmojiMode(enable)
+                } else {
+                    // Dock temporarily (default behavior)
+                    keyboardSettings.textProcessor?.handleFinishInput(ime)
+                    ime.shouldRevertToFloating = true
+                    ime.pendingDockedMode = KeyboardMode.EMOJI
+                    Handler(ime.mainLooper).post { ime.anchorToBottom() }
+                }
             } else if (!enable && ime.shouldRevertToFloating) {
                 ime.shouldRevertToFloating = false
                 Handler(ime.mainLooper).post { ime.toggleFloatingMode() }
@@ -1269,10 +1274,17 @@ fun performKeyAction(
             val enable = action.enable
             Log.d(TAG, "Toggling Clipboard: $enable")
             if (enable && ime.isFloatingModeEnabled()) {
-                keyboardSettings.textProcessor?.handleFinishInput(ime)
-                ime.shouldRevertToFloating = true
-                ime.pendingDockedMode = KeyboardMode.CLIPBOARD
-                Handler(ime.mainLooper).post { ime.anchorToBottom() }
+                if (ime.isExpandInFloatingEnabled()) {
+                    // Keep floating, just switch mode within the floating window
+                    keyboardSettings.textProcessor?.handleFinishInput(ime)
+                    onToggleClipboardMode(enable)
+                } else {
+                    // Dock temporarily (default behavior)
+                    keyboardSettings.textProcessor?.handleFinishInput(ime)
+                    ime.shouldRevertToFloating = true
+                    ime.pendingDockedMode = KeyboardMode.CLIPBOARD
+                    Handler(ime.mainLooper).post { ime.anchorToBottom() }
+                }
             } else if (!enable && ime.shouldRevertToFloating) {
                 ime.shouldRevertToFloating = false
                 Handler(ime.mainLooper).post { ime.toggleFloatingMode() }

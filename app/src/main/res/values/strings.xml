@@ -146,4 +146,17 @@
     <string name="other">Other</string>
     <string name="show_on_screen_keyboard">Show on-screen keyboard</string>
     <string name="show_on_screen_keyboard_description">Show on-screen keyboard while using physical keyboard</string>
+    <!-- Floating Mode -->
+    <string name="floating_mode">Floating Mode</string>
+    <string name="floating_mode_enable">Enable Floating Mode</string>
+    <string name="floating_mode_enable_description">Draw the keyboard inside a floating, draggable window overlay</string>
+    <string name="floating_opacity">Opacity: %1$d%%</string>
+    <string name="floating_presets">Presets</string>
+    <string name="floating_preset_bottom">Standard (Docked to Bottom)</string>
+    <string name="floating_preset_topleft">Top-Left</string>
+    <string name="floating_preset_center">Center</string>
+    <string name="floating_preset_right">Right-Side</string>
+    <string name="floating_expand_in_floating">Keep floating for emoji/clipboard</string>
+    <string name="floating_expand_in_floating_description">Show emoji and clipboard views inside the floating window instead of temporarily docking</string>
+    <string name="floating_max_width">Max width: %1$d%%</string>
 </resources>

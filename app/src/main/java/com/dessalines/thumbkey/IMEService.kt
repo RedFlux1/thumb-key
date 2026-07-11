@@ -95,6 +95,15 @@ class IMEService :
         return (config?.enabled == 1) && Settings.canDrawOverlays(this)
     }
 
+    /** True when floating mode is enabled AND the user chose to keep emoji/clipboard
+     *  views inside the floating window instead of temporarily docking. */
+    internal fun isExpandInFloatingEnabled(): Boolean {
+        if (!isFloatingModeEnabled()) return false
+        val app = application as ThumbkeyApplication
+        val config = app.floatingModeRepository.getConfigSync()
+        return config?.expandInFloating == 1
+    }
+
     /** Non-null when the next docked [KeyboardScreen] should start in a specific mode. */
     internal var pendingDockedMode: KeyboardMode? = null
 
