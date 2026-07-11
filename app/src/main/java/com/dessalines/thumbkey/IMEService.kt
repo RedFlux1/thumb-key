@@ -110,11 +110,31 @@ class IMEService :
     /** True when the user was floating before temporarily docking for emoji/clipboard. */
     internal var shouldRevertToFloating: Boolean = false
 
+    /**
+     * Tracks whether the floating overlay was visible immediately before the
+     * IME window was last hidden.  Used in [onWindowShown] to decide whether
+     * we should recreate the floating view — we only do so when we *know* an
+     * input session was active before the window disappeared (e.g. returning
+     * from recents).  Without this guard the floating keyboard would appear
+     * on screen-unlock even though no text field is focused.
+     *
+     * The companion [lastWindowHiddenTime] adds a time-decay so a hide/show
+     * cycle that spans more than a few seconds (screen lock / unlock) is
+     * treated as stale and does NOT recreate the overlay.
+     */
+    private var wasFloatingBeforeHidden: Boolean = false
+    private var lastWindowHiddenTime: Long = 0L
+
     private fun showFloating() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        if (floatingView != null) return
 
+        // Always clear the revert flag when a new floating session starts,
+        // even if the view already exists (early return below). This prevents
+        // a stale shouldRevertToFloating from a previous session causing
+        // spurious dock↔float toggles.
         shouldRevertToFloating = false
+
+        if (floatingView != null) return
 
         val view = setupView()
         val app = application as ThumbkeyApplication
@@ -147,6 +167,9 @@ class IMEService :
                 windowManager.removeView(view)
             } catch (e: Exception) {
                 Log.e(TAG, "Error removing floating view: $e")
+                // Don't null out floatingView if removal failed so the next
+                // hide attempt can retry removing the still-attached view.
+                return
             }
         }
         floatingView = null
@@ -239,6 +262,11 @@ class IMEService :
         restarting: Boolean,
     ) {
         super.onStartInput(attribute, restarting)
+        // A fresh input session is starting — invalidate the previous
+        // window-hidden state so that onWindowShown won't accidentally
+        // recreate a stale floating view.
+        wasFloatingBeforeHidden = false
+        lastWindowHiddenTime = 0L
         if (isFloatingModeEnabled()) {
             val dummyView = View(this)
             dummyView.layoutParams = ViewGroup.LayoutParams(0, 0)
@@ -261,11 +289,28 @@ class IMEService :
                         WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM,
                 )
             }
-            showFloating()
+            // Only recreate the floating overlay when we are confident an
+            // input session was active before the window was last hidden.
+            // This prevents the keyboard from appearing after screen-unlock
+            // when no text field is actually focused.
+            if (wasFloatingBeforeHidden && currentInputBinding != null) {
+                val elapsed = System.currentTimeMillis() - lastWindowHiddenTime
+                if (elapsed < 3_000L) {
+                    showFloating()
+                } else {
+                    // Too much time has passed — the session is stale
+                    // (e.g. screen was locked and unlocked).
+                    wasFloatingBeforeHidden = false
+                }
+            }
         }
     }
 
     override fun onWindowHidden() {
+        // Remember whether the floating overlay was visible so that
+        // onWindowShown knows whether it should recreate it.
+        lastWindowHiddenTime = System.currentTimeMillis()
+        wasFloatingBeforeHidden = floatingView != null
         hideFloating()
         clearFloatingWindowFlags()
         currentKeyboardDefinition?.settings?.textProcessor?.handleFinishInput(this)
@@ -274,12 +319,22 @@ class IMEService :
 
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
+        // Reset temporary dock state so a stale flag doesn't
+        // trigger a spurious dock↔float toggle on the next session.
+        shouldRevertToFloating = false
+        pendingDockedMode = null
+        wasFloatingBeforeHidden = false
+        lastWindowHiddenTime = 0L
         hideFloating()
         clearFloatingWindowFlags()
     }
 
     override fun onFinishInput() {
         super.onFinishInput()
+        shouldRevertToFloating = false
+        pendingDockedMode = null
+        wasFloatingBeforeHidden = false
+        lastWindowHiddenTime = 0L
         hideFloating()
         clearFloatingWindowFlags()
     }
