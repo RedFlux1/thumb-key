@@ -1249,15 +1249,37 @@ fun performKeyAction(
         is KeyAction.ToggleEmojiMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Emoji: $enable")
-            keyboardSettings.textProcessor?.handleFinishInput(ime)
-            onToggleEmojiMode(enable)
+            if (enable && ime.isFloatingModeEnabled()) {
+                keyboardSettings.textProcessor?.handleFinishInput(ime)
+                ime.shouldRevertToFloating = true
+                ime.pendingDockedMode = KeyboardMode.EMOJI
+                // Defer so the current touch handler finishes before
+                // the floating view is removed from the window.
+                Handler(ime.mainLooper).post { ime.anchorToBottom() }
+            } else if (!enable && ime.shouldRevertToFloating) {
+                ime.shouldRevertToFloating = false
+                Handler(ime.mainLooper).post { ime.toggleFloatingMode() }
+            } else {
+                keyboardSettings.textProcessor?.handleFinishInput(ime)
+                onToggleEmojiMode(enable)
+            }
         }
 
         is KeyAction.ToggleClipboardMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Clipboard: $enable")
-            keyboardSettings.textProcessor?.handleFinishInput(ime)
-            onToggleClipboardMode(enable)
+            if (enable && ime.isFloatingModeEnabled()) {
+                keyboardSettings.textProcessor?.handleFinishInput(ime)
+                ime.shouldRevertToFloating = true
+                ime.pendingDockedMode = KeyboardMode.CLIPBOARD
+                Handler(ime.mainLooper).post { ime.anchorToBottom() }
+            } else if (!enable && ime.shouldRevertToFloating) {
+                ime.shouldRevertToFloating = false
+                Handler(ime.mainLooper).post { ime.toggleFloatingMode() }
+            } else {
+                keyboardSettings.textProcessor?.handleFinishInput(ime)
+                onToggleClipboardMode(enable)
+            }
         }
 
         KeyAction.GotoSettings -> {
@@ -1492,6 +1514,10 @@ fun performKeyAction(
             ime.requestHideSelf(0)
         }
 
+        KeyAction.ToggleFloatingMode -> {
+            ime.toggleFloatingMode()
+        }
+
         KeyAction.Noop -> {}
 
         is KeyAction.ToggleCurrentWordCapitalization -> {
@@ -1586,8 +1612,9 @@ fun getAutoKeyWidth(
     keyPadding: Int,
     position: KeyboardPosition,
     ctx: Context,
+    availableWidthDp: Int? = null,
 ): Int {
-    val screenWidth = getCurrentDisplayWidth(ctx)
+    val screenWidth = availableWidthDp ?: getCurrentDisplayWidth(ctx)
     val availableWidth = screenWidth - (keyPadding * 2)
     val multiplier =
         when (position) {

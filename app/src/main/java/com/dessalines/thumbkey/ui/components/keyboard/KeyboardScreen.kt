@@ -2,6 +2,7 @@ package com.dessalines.thumbkey.ui.components.keyboard
 
 import android.content.Context
 import android.media.AudioManager
+import android.os.Handler
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.inputmethod.InputConnection.CURSOR_UPDATE_MONITOR
@@ -104,7 +105,11 @@ fun KeyboardScreen(
     onChangePosition: ((old: KeyboardPosition) -> KeyboardPosition) -> Unit,
     onToggleHideLetters: () -> Unit,
     onGoToClipboardSettings: () -> Unit,
+    floatingWidthDp: Dp? = null,
+    initialKeyboardMode: KeyboardMode? = null,
+    isFloating: Boolean = false,
 ) {
+    val floatingWidthPx = floatingWidthDp?.value?.toInt()
     val ctx = LocalContext.current as IMEService
 
     val layout =
@@ -124,12 +129,25 @@ fun KeyboardScreen(
 
     var mode by remember {
         val startMode =
-            getKeyboardMode(
+            initialKeyboardMode ?: getKeyboardMode(
                 ime = ctx,
                 autoCapitalize = settings?.autoCapitalize?.toBool() == true && keyboardDefinition.settings.autoShift,
             )
 
         mutableStateOf(startMode)
+    }
+
+    // When exiting clipboard mode from floating, revert to floating.
+    var prevMode by remember { mutableStateOf(mode) }
+    LaunchedEffect(mode) {
+        if (prevMode == KeyboardMode.CLIPBOARD &&
+            mode != KeyboardMode.CLIPBOARD &&
+            ctx.shouldRevertToFloating
+        ) {
+            ctx.shouldRevertToFloating = false
+            Handler(ctx.mainLooper).post { ctx.toggleFloatingMode() }
+        }
+        prevMode = mode
     }
 
     var capsLock by remember {
@@ -213,9 +231,9 @@ fun KeyboardScreen(
     val autoSizeKeys = (settings?.autoSizeKeys ?: DEFAULT_AUTO_SIZE_KEYS).toBool()
     val nonSquareKeys = (settings?.nonSquareKeys ?: DEFAULT_NON_SQUARE_KEYS).toBool()
     val legendWidth =
-        if (autoSizeKeys) {
+        if (autoSizeKeys && !isFloating) {
             val keyboardLayout = settings?.keyboardLayout ?: DEFAULT_KEYBOARD_LAYOUT
-            getAutoKeyWidth(keyboardLayout, keyPadding, position, ctx)
+            getAutoKeyWidth(keyboardLayout, keyPadding, position, ctx, floatingWidthPx)
         } else {
             settings?.keyWidth ?: DEFAULT_KEY_WIDTH
         }

@@ -296,6 +296,7 @@ This swaps the 'switch language' and 'toggle emoji' actions on the top-right key
 - `SwitchIME`
 - `SwitchIMEVoice`
 - `HideKeyboard`
+- `ToggleFloatingMode`
 - `Noop` # No operation. Does nothing.
 
 `keyAction` and `text` cannot be used together.
