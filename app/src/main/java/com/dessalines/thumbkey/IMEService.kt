@@ -255,6 +255,30 @@ class IMEService :
         showFloating()
     }
 
+    internal fun togglePersistentMode() {
+        val app = application as ThumbkeyApplication
+        val settings = app.appSettingsRepository.appSettings.value
+        val currentlyEnabled =
+            (
+                settings?.persistentFloatingEnabled
+                    ?: DEFAULT_PERSISTENT_FLOATING_ENABLED
+            ).toBool()
+
+        val newEnabled = if (currentlyEnabled) 0 else 1
+        app.appSettingsRepository.updateOtherSettings(
+            OtherSettingsUpdate(
+                id = 1,
+                showOnScreenKeyboard =
+                    settings?.showOnScreenKeyboard
+                        ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
+                floatingModeEnabled =
+                    settings?.floatingModeEnabled
+                        ?: DEFAULT_FLOATING_MODE_ENABLED,
+                persistentFloatingEnabled = newEnabled,
+            ),
+        )
+    }
+
     internal fun toggleFloatingMode() {
         val app = application as ThumbkeyApplication
         val settings = app.appSettingsRepository.appSettings.value

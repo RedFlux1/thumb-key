@@ -1362,6 +1362,11 @@ fun performKeyAction(
             Handler(ime.mainLooper).post { ime.toggleFloatingMode() }
         }
 
+        is KeyAction.TogglePersistentMode -> {
+            Log.d(TAG, "Toggling persistent mode")
+            Handler(ime.mainLooper).post { ime.togglePersistentMode() }
+        }
+
         is KeyAction.ToggleNumericMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Numeric: $enable")

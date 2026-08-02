@@ -181,7 +181,7 @@ class ComposeKeyboardView(
                                                             onDragStart = { velocityTracker.resetTracking() },
                                                             onDragEnd = {
                                                                 val velocity = velocityTracker.calculateVelocity()
-                                                                if (velocity.y > 1000f) {
+                                                                if (velocity.y > 2500f) {
                                                                     ctx.onFlingDismiss()
                                                                 } else {
                                                                     ctx.onDragEnd()
