@@ -353,3 +353,12 @@ val MIGRATION_31_32 =
             )
         }
     }
+
+val MIGRATION_32_33 =
+    object : Migration(32, 33) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE AppSettings ADD COLUMN persistent_floating_enabled INTEGER NOT NULL DEFAULT 0",
+            )
+        }
+    }

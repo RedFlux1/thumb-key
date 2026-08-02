@@ -78,6 +78,7 @@ const val MAX_CLIPBOARD_MAX_SIZE = 100
 const val DEFAULT_USE_PRIVATE_CLIPBOARD = 0
 const val DEFAULT_SHOW_ON_SCREEN_KEYBOARD = 0
 const val DEFAULT_FLOATING_MODE_ENABLED = 0
+const val DEFAULT_PERSISTENT_FLOATING_ENABLED = 0
 
 @Entity
 data class AppSettings(
@@ -350,6 +351,11 @@ data class AppSettings(
         defaultValue = DEFAULT_FLOATING_MODE_ENABLED.toString(),
     )
     val floatingModeEnabled: Int,
+    @ColumnInfo(
+        name = "persistent_floating_enabled",
+        defaultValue = DEFAULT_PERSISTENT_FLOATING_ENABLED.toString(),
+    )
+    val persistentFloatingEnabled: Int,
 )
 
 data class LayoutsUpdate(
@@ -524,6 +530,8 @@ data class OtherSettingsUpdate(
     val showOnScreenKeyboard: Int,
     @ColumnInfo(name = "floating_mode_enabled")
     val floatingModeEnabled: Int,
+    @ColumnInfo(name = "persistent_floating_enabled")
+    val persistentFloatingEnabled: Int,
 )
 
 class FloatingModeRepository(
@@ -688,7 +696,7 @@ class AppSettingsRepository(
 }
 
 @Database(
-    version = 32,
+    version = 33,
     entities = [AppSettings::class, FloatingModeConfig::class],
     exportSchema = true,
 )
@@ -713,7 +721,7 @@ abstract class AppDB : RoomDatabase() {
                             "thumbkey",
                         ).allowMainThreadQueries()
                         .addMigrations(
-                            MIGRATION_31_32,
+                            MIGRATION_32_33,
                             MIGRATION_30_31,
                             MIGRATION_29_30,
                             MIGRATION_28_29,
@@ -764,6 +772,10 @@ abstract class AppDB : RoomDatabase() {
                                                 put(
                                                     "floating_mode_enabled",
                                                     DEFAULT_FLOATING_MODE_ENABLED,
+                                                )
+                                                put(
+                                                    "persistent_floating_enabled",
+                                                    DEFAULT_PERSISTENT_FLOATING_ENABLED,
                                                 )
                                             },
                                         )

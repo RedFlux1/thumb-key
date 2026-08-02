@@ -150,4 +150,6 @@
     <string name="floating_mode_description">Show keyboard as a floating overlay instead of docked at the bottom. Requires "Draw over other apps" permission.</string>
     <string name="floating_expand_in_floating">Emoji/clipboard in floating</string>
     <string name="floating_expand_in_floating_description">Keep emoji and clipboard views inside the floating window instead of temporarily docking</string>
+    <string name="persistent_floating_mode">Keep keyboard visible</string>
+    <string name="persistent_floating_mode_description">Keyboard stays visible even without a text field. Dismiss with a fling-down on the drag handle. Useful for keyboard shortcuts and navigation.</string>
 </resources>
