@@ -40,15 +40,7 @@ val KB_EN_THUMBKEY_PROGRAMMING_MAIN =
                     topLeft = KeyC("=", color = MUTED),
                     topRight = KeyC("+", color = MUTED),
                 ),
-                // Modifier key: Ctrl (center), Meta (top), Alt (right), Emoji (left), Disable (bottom)
-                KeyItemC(
-                    center = TOGGLE_CTRL_TRUE_KEYC,
-                    swipeType = FOUR_WAY_CROSS,
-                    top = TOGGLE_META_TRUE_KEYC,
-                    right = TOGGLE_ALT_TRUE_KEYC,
-                    bottom = TOGGLE_CTRL_FALSE_KEYC,
-                    left = TOGGLE_EMOJI_MODE_TRUE_KEYC,
-                ),
+                EMOJI_KEY_ITEM,
             ),
             listOf(
                 KeyItemC(
@@ -161,15 +153,7 @@ val KB_EN_THUMBKEY_PROGRAMMING_SHIFTED =
                     topLeft = KeyC("=", color = MUTED),
                     topRight = KeyC("+", color = MUTED),
                 ),
-                // Modifier key: Ctrl (center), Meta (top), Alt (right), Emoji (left), Disable (bottom)
-                KeyItemC(
-                    center = TOGGLE_CTRL_TRUE_KEYC,
-                    swipeType = FOUR_WAY_CROSS,
-                    top = TOGGLE_META_TRUE_KEYC,
-                    right = TOGGLE_ALT_TRUE_KEYC,
-                    bottom = TOGGLE_CTRL_FALSE_KEYC,
-                    left = TOGGLE_EMOJI_MODE_TRUE_KEYC,
-                ),
+                EMOJI_KEY_ITEM,
             ),
             listOf(
                 KeyItemC(
