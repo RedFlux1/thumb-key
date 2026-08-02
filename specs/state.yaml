@@ -2,9 +2,15 @@
 # Auto-managed by bigpowers skills. Do not edit manually while skills are active.
 
 session:
-  active_epic: null
-  active_story: null
+  active_epic: e01
+  active_story: e01s01
   workflow_mode: solo-git
-  last_skill: seed-conventions
+  last_skill: plan-work
 
-handoff: null
+handoff:
+  next_skill: kickoff-branch
+  branch: feat/floating-keyboard
+  epic_dir: specs/epics/e01-floating-keyboard
+
+metrics:
+  story_start: "2026-08-02T17:30:00+02:00"

@@ -1,0 +1,127 @@
+# specs/product/SCOPE_LATEST.yaml — written by scope-work (2026-08-02)
+# Step 1 of the planning spine: scope-work → slice-tasks → plan-work
+
+core_value: >
+  Let users move the Thumb-Key keyboard anywhere on screen as a floating overlay,
+  so it doesn't block content or force awkward hand positions on large screens.
+
+summary: >
+  Thumb-Key currently docks at the bottom of the screen. In landscape mode,
+  on tablets, foldables, or large phones, this wastes screen real estate and
+  forces the user to reach to the bottom bezel. This scope adds a floating
+  mode: when enabled, the keyboard renders as a draggable overlay window
+  (using WindowManager.addView with TYPE_APPLICATION_OVERLAY) instead of the
+  standard IME input view. The keyboard is visually identical to the docked
+  version and follows normal IME focus lifecycle — visible when a text field
+  has focus, hidden when focus is lost.
+
+  The user toggles floating mode via a YAML-configurable keybinding or a
+  settings toggle. In floating mode, a small drag handle at the top lets the
+  user reposition the keyboard by dragging, or dismiss floating mode entirely
+  with a fling-down gesture. Position persists permanently, stored separately
+  for portrait and landscape orientations. Opacity is user-adjustable in
+  settings.
+
+  This scope covers the core floating experience. Per-app configuration,
+  emoji/clipboard mode behavior toggling, and manual coordinate entry are
+  deferred to future work.
+
+in_scope:
+  - name: "Floating mode toggle"
+    description: >
+      YAML keybinding (ToggleFloatingMode action) and settings screen toggle
+      to switch between docked and floating keyboard globally.
+    maps_to: "e01s01"
+
+  - name: "Floating overlay window"
+    description: >
+      Render the keyboard in a WindowManager overlay (TYPE_APPLICATION_OVERLAY)
+      instead of the standard IME input view. Window lifecycle synchronized with
+      text field focus (onStartInput → show, onFinishInput → hide).
+    maps_to: "e01s02"
+
+  - name: "Drag-to-reposition"
+    description: >
+      Drag handle at top of keyboard. User drags to reposition the floating
+      window anywhere on screen. Clamped to screen bounds.
+    maps_to: "e01s03"
+
+  - name: "Fling-down to dismiss"
+    description: >
+      Fling gesture on the drag handle with downward velocity > threshold
+      disables floating mode and returns to docked keyboard.
+    maps_to: "e01s03"
+
+  - name: "Position persistence"
+    description: >
+      Floating window X/Y position saved to Room DB, keyed by orientation
+      (portrait vs landscape). Persists across sessions and reboots.
+    maps_to: "e01s04"
+
+  - name: "Tap-through to app"
+    description: >
+      Touches outside the floating keyboard pass through to the underlying app.
+      Keyboard hides when the text field loses focus, not on outside tap.
+    maps_to: "e01s02"
+
+  - name: "Opacity setting"
+    description: >
+      User-adjustable opacity slider in floating mode settings. Applied to the
+      floating window. Persisted in Room DB.
+    maps_to: "e01s05"
+
+  - name: "Settings screen"
+    description: >
+      Floating mode settings accessible from the main Thumb-Key settings:
+      toggle on/off and opacity slider.
+    maps_to: "e01s05"
+
+out_of_scope:
+  - item: "Per-app floating mode"
+    reason: >
+      Deferred. Adds complexity (app detection, deny list, per-app prefs).
+      Global toggle covers the primary use case.
+
+  - item: "Emoji/clipboard dock-vs-float behavior toggle"
+    reason: >
+      Deferred. Prior implementation had this, but it added lifecycle
+      complexity. Architecture should not preclude adding it later, but
+      initial version defaults to docked emoji/clipboard (standard behavior).
+
+  - item: "Manual X/Y position input in settings"
+    reason: >
+      Not valuable. Position learned from drag gestures is more intuitive
+      and avoids coordinate-guessing UX.
+
+  - item: "Floating-specific keyboard size controls"
+    reason: >
+      Existing keyboard size settings apply. No separate size control needed
+      — the floating keyboard inherits the same size.
+
+  - item: "Resize-from-corner/edge handles"
+    reason: >
+      Deferred. Adds gesture complexity. Keyboard size is already
+      configurable in settings.
+
+constraints:
+  - "Android 8.0+ (API 26) — minimum for TYPE_APPLICATION_OVERLAY"
+  - "Must coexist with existing modifier support (Ctrl/Alt/Meta in main)"
+  - "All source files committed (FloatingModeRepository, ViewModel, etc.)"
+  - "Must not break existing docked keyboard behavior when floating is disabled"
+  - "No new external dependencies beyond what Thumb-Key already uses"
+
+success_criteria:
+  - "Floating keyboard appears when text field focused with floating mode enabled"
+  - "Floating keyboard hides when text field loses focus"
+  - "Drag handle repositions the floating keyboard anywhere on screen"
+  - "Fling-down on drag handle disables floating and returns to docked"
+  - "Position survives app switch, orientation change, and reboot"
+  - "Taps on app content (not keyboard) pass through and work correctly"
+  - "When floating mode is disabled, docked keyboard works identically to before"
+  - "Opacity slider changes take effect immediately"
+  - "Preflight green: ./gradlew lintKotlin lint assembleDebug"
+
+references:
+  - "../planning-context.yaml"
+  - "../tech-architecture/tech-stack.md"
+  - "../../../../thumb-key-modifier-plan.md"

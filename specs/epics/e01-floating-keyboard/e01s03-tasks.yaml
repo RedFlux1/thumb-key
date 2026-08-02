@@ -1,0 +1,106 @@
+# e01s03 — YAML keybinding and opacity setting
+
+story_id: e01s03
+title: "YAML keybinding and opacity setting"
+status: failing
+bcps: 3
+
+tasks:
+  - id: t01
+    description: >
+      Add ToggleFloatingMode to KeyAction sealed class in Types.kt.
+      Simple action with no parameters — toggles floating on/off from
+      a key press. Place alongside ToggleCtrlMode/ToggleAltMode.
+    verify: ./gradlew assembleDebug
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories:
+        - "KeyAction"
+        - "Types"
+
+  - id: t02
+    description: >
+      Handle ToggleFloatingMode in performKeyAction() (Utils.kt).
+      Add branch to the KeyAction when block. Call into
+      IMEService.toggleFloatingMode(). Ensure all when branches compile
+      (Kotlin sealed class exhaustiveness enforced).
+    verify: ./gradlew assembleDebug
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories:
+        - "KeyAction"
+        - "Utils"
+
+  - id: t03
+    description: >
+      Add ToggleFloatingMode deserialization in
+      KeyboardModificationService.kt YAML parser. Map string
+      "ToggleFloatingMode" to ToggleFloatingMode() action.
+      No extra arguments needed. Add test case if YAML test harness exists.
+    verify: ./gradlew assembleDebug
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories:
+        - "YAML"
+        - "Key Modification"
+
+  - id: t04
+    description: >
+      Add TOGGLE_FLOATING_MODE_KEYC convenience key component to
+      CommonKeys.kt with Icons.Outlined.OpenInFull icon and MUTED color.
+      Place alongside TOGGLE_CTRL_TRUE_KEYC and similar toggle keys.
+    verify: ./gradlew assembleDebug
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories:
+        - "CommonKeys"
+        - "Keyboard Layout"
+
+  - id: t05
+    description: >
+      Add opacity slider to floating mode settings section.
+      Range 30–100 (percent). Read/write via FloatingModeRepository.
+      Slider below the enable/disable toggle. Persist to Room on change.
+      Show current value as percentage label.
+    verify: ./gradlew assembleDebug
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories:
+        - "Settings"
+        - "Opacity"
+
+  - id: t06
+    description: >
+      Apply opacity from FloatingModeConfig when creating floating
+      window in showFloating(). Read config, convert opacity (0-100)
+      to alpha (0.3f-1.0f), set on WindowManager.LayoutParams.alpha
+      before windowManager.addView().
+    verify: ./gradlew assembleDebug
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories:
+        - "WindowManager"
+        - "Opacity"
+
+  - id: t07
+    description: >
+      Run full preflight: lint + assemble. Gate must be green.
+    verify: ./gradlew lintKotlin lint assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Quality Gate"

@@ -1,0 +1,54 @@
+# specs/planning-context.yaml — written by elaborate-spec (2026-08-02)
+# Consumed by scope-work and slice-tasks
+
+feature_name: "Floating Keyboard Mode"
+
+problem_statement: >
+  Thumb-Key is always docked at the bottom of the screen. Users (especially on
+  tablets, foldables, or in landscape orientation) want to reposition the keyboard
+  so it doesn't cover content or require reaching to the bottom edge. The keyboard
+  should float as a draggable overlay, replacing the docked IME whenever a text
+  field is focused.
+
+constraints:
+  - "Must follow normal IME focus lifecycle: show on input focus, hide on focus loss"
+  - "Must not interfere with existing Ctrl/Alt/Meta modifier support (already on main)"
+  - "Taps outside the floating keyboard must pass through to the app below"
+  - "Android 8.0+ (API 26) minimum for TYPE_APPLICATION_OVERLAY"
+  - "Keyboard size uses existing keyboard size settings — no floating-specific size controls"
+  - "All source files must be committed (lesson from prior reverted attempt)"
+
+out_of_scope:
+  - "Per-app floating mode (global toggle only in initial version)"
+  - "Emoji/clipboard mode: dock-vs-float behavior toggle (deferred; architecture should support it later)"
+  - "Manual X/Y position input fields in settings (position learned from drag only)"
+  - "Floating-specific keyboard size controls (reuses existing size settings)"
+
+key_decisions:
+  - decision: "Use WindowManager.addView() with TYPE_APPLICATION_OVERLAY for the floating window"
+    rationale: >
+      Same approach as prior attempt — creates a true overlay above all apps.
+      Fix lifecycle bugs by synchronizing only with onStartInput/onFinishInput,
+      not onWindowShown/onWindowHidden.
+
+  - decision: "Floating visually identical to docked keyboard (same Compose content, same size)"
+    rationale: >
+      User wants identical appearance. Keyboard size controlled by existing
+      settings. Only addition is a narrow drag handle bar at the top.
+
+  - decision: "Position persists per-orientation (portrait vs landscape)"
+    rationale: >
+      Different orientations have different screen geometries. A position
+      that works in portrait may be off-screen in landscape.
+
+  - decision: "Fling-down on drag handle dismisses floating mode (not just hides keyboard)"
+    rationale: >
+      Fling-down = intent to stop floating. Disables floating mode so next
+      input session returns to docked keyboard. Drag-and-release without fling
+      just repositions.
+
+  - decision: "Initial settings: toggle on/off + opacity slider"
+    rationale: >
+      Position learned from drag gestures, no manual coordinate entry needed.
+      Keyboard size reuses existing size settings. Emoji/clipboard behavior
+      toggle deferred.

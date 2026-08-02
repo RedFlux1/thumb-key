@@ -1,0 +1,95 @@
+# e01s02 — Drag-to-reposition and position persistence
+
+story_id: e01s02
+title: "Drag-to-reposition and position persistence"
+status: failing
+bcps: 5
+
+tasks:
+  - id: t01
+    description: >
+      Add drag handle composable above keyboard content in ComposeKeyboardView
+      floating branch: a 20.dp tall Box with DragHandle icon, centered,
+      using detectDragGestures with VelocityTracker. Only rendered when
+      isFloating is true (reads from FloatingModeConfig).
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Compose UI"
+        - "Drag Handle"
+
+  - id: t02
+    description: >
+      Drag-to-reposition: on drag, update WindowManager.LayoutParams x/y
+      by delta. Clamp position to screen bounds using displayMetrics
+      (widthPixels, heightPixels). Use IMEService.onDrag(dx, dy) to
+      apply position update via windowManager.updateViewLayout().
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Drag"
+        - "WindowManager"
+
+  - id: t03
+    description: >
+      Fling-down to dismiss: on drag end, check VelocityTracker vertical
+      velocity. If velocity.y > 1000f (downward fling), call
+      toggleFloatingMode() to disable floating and return to docked.
+      If velocity <= threshold, treat as normal drag end (reposition only).
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Gesture"
+        - "Fling"
+
+  - id: t04
+    description: >
+      Save position to Room DB on drag end: persist x, y to
+      FloatingModeConfig via FloatingModeRepository.upsert().
+      Determine orientation from resources.configuration.orientation
+      (ORIENTATION_PORTRAIT / ORIENTATION_LANDSCAPE). Store position
+      keyed by orientation so landscape and portrait are independent.
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Database"
+        - "Position Persistence"
+
+  - id: t05
+    description: >
+      Restore position when creating floating window in showFloating().
+      Read FloatingModeConfig from Room. If saved position exists for
+      current orientation, apply to WindowManager.LayoutParams x/y.
+      If no saved position for this orientation, default to (100, 200).
+      Position is orientation-aware — rotation loads the correct position.
+    verify: ./gradlew assembleDebug
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories:
+        - "Position Persistence"
+        - "Orientation"
+
+  - id: t06
+    description: >
+      Run full preflight: lint + assemble. Gate must be green.
+    verify: ./gradlew lintKotlin lint assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Quality Gate"

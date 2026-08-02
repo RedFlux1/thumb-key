@@ -1,0 +1,120 @@
+# e01s01 — Overlay window with focus-synced lifecycle
+# Tracer-bullet: the thinnest vertical slice through floating keyboard
+
+story_id: e01s01
+title: "Overlay window with focus-synced lifecycle"
+status: failing
+bcps: 5
+
+tasks:
+  - id: t01
+    description: >
+      Add FloatingModeConfig Room entity (enabled, x, y, opacity fields)
+      with DAO (getConfig, upsert) and database migration. Register in AppDb.
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Infrastructure"
+        - "Database"
+
+  - id: t02
+    description: >
+      Add FloatingModeRepository wrapping the DAO, exposing
+      Flow<FloatingModeConfig?> for reactive reads and a suspend upsert.
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Infrastructure"
+        - "Database"
+
+  - id: t03
+    description: >
+      Add floating mode toggle (enabled/disabled) to the settings screen.
+      Reads/writes via FloatingModeRepository. Check overlay permission
+      (Settings.canDrawOverlays) and prompt if needed. Disable toggle
+      on API < 26.
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Settings"
+        - "UI"
+
+  - id: t04
+    description: >
+      IMEService: add showFloating() (creates WindowManager overlay with
+      TYPE_APPLICATION_OVERLAY), hideFloating() (removes overlay),
+      toggleFloatingMode() (switches between docked and floating).
+      Manage floatingView reference and windowManager lifecycle.
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "IME Lifecycle"
+        - "WindowManager"
+
+  - id: t05
+    description: >
+      IMEService lifecycle: onStartInput → show floating if enabled
+      (with dummy 0x0 input view); onFinishInput → hide floating;
+      onDestroy → hide floating (cleanup). Read FloatingModeConfig
+      from Room in isFloatingModeEnabled().
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "IME Lifecycle"
+
+  - id: t06
+    description: >
+      ComposeKeyboardView: read FloatingModeConfig reactively from Room.
+      When floating (enabled=1), wrap KeyboardScreen in a Surface with
+      rounded corners (12.dp) and shadow (8.dp). When docked, render
+      KeyboardScreen directly (identical to current behavior).
+      No drag handle in this slice.
+    verify: ./gradlew assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Compose UI"
+        - "Floating Window"
+
+  - id: t07
+    description: >
+      Tap-through and insets: set FLAG_NOT_TOUCH_MODAL on floating window.
+      onComputeInsets: report zero content insets and empty touchable region
+      so host activity doesn't resize. onEvaluateFullscreenMode: return false
+      when floating. onWindowHidden/onFinishInputView: cleanup flags.
+    verify: ./gradlew assembleDebug
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories:
+        - "Input Handling"
+        - "WindowManager"
+
+  - id: t08
+    description: >
+      Run full preflight: lint + assemble. Gate must be green.
+    verify: ./gradlew lintKotlin lint assembleDebug
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories:
+        - "Quality Gate"

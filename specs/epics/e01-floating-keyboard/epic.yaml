@@ -1,0 +1,26 @@
+# epic.yaml — Floating Keyboard Mode
+# Capsule manifest for e01-floating-keyboard
+
+epic_id: e01
+title: "Floating Keyboard Mode"
+status: planned
+bcps: 13
+
+stories:
+  - id: e01s01
+    title: "Overlay window with focus-synced lifecycle"
+    bcps: 5
+    status: planned
+    delta: ADDED
+
+  - id: e01s02
+    title: "Drag-to-reposition and position persistence"
+    bcps: 5
+    status: planned
+    delta: ADDED
+
+  - id: e01s03
+    title: "YAML keybinding and opacity setting"
+    bcps: 3
+    status: planned
+    delta: ADDED

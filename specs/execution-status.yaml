@@ -1,0 +1,10 @@
+# execution-status.yaml — Thumb-Key
+# Auto-managed by bigpowers skills
+
+epics:
+  e01:
+    status: planned
+    stories:
+      e01s01: planned
+      e01s02: planned
+      e01s03: planned
