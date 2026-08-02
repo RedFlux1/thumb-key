@@ -134,6 +134,7 @@ fun KeyboardKey(
     onToggleShiftMode: (enable: Boolean) -> Unit,
     onToggleCtrlMode: (enable: Boolean) -> Unit,
     onToggleAltMode: (enable: Boolean) -> Unit,
+    onToggleMetaMode: (enable: Boolean) -> Unit,
     onToggleNumericMode: (enable: Boolean) -> Unit,
     onToggleEmojiMode: (enable: Boolean) -> Unit,
     onToggleClipboardMode: (enable: Boolean) -> Unit,
@@ -143,6 +144,7 @@ fun KeyboardKey(
     onSwitchLanguage: () -> Unit,
     onChangePosition: ((old: KeyboardPosition) -> KeyboardPosition) -> Unit,
     onKeyEvent: () -> Unit,
+    activeModifiers: Int = 0,
     oppositeCaseKey: KeyItemC? = null,
     numericKey: KeyItemC? = null,
     dragReturnEnabled: Boolean,
@@ -419,6 +421,7 @@ fun KeyboardKey(
                         onToggleShiftMode = onToggleShiftMode,
                         onToggleCtrlMode = onToggleCtrlMode,
                         onToggleAltMode = onToggleAltMode,
+                        onToggleMetaMode = onToggleMetaMode,
                         onToggleNumericMode = onToggleNumericMode,
                         onToggleEmojiMode = onToggleEmojiMode,
                         onToggleClipboardMode = onToggleClipboardMode,
@@ -428,6 +431,7 @@ fun KeyboardKey(
                         onSwitchLanguage = onSwitchLanguage,
                         onChangePosition = onChangePosition,
                         onKeyEvent = onKeyEvent,
+                        activeModifiers = activeModifiers,
                     )
                     doneKeyAction(scope, action, isDragged, releasedKey, animationHelperSpeed)
                 },
@@ -441,6 +445,7 @@ fun KeyboardKey(
                             onToggleShiftMode = onToggleShiftMode,
                             onToggleCtrlMode = onToggleCtrlMode,
                             onToggleAltMode = onToggleAltMode,
+                            onToggleMetaMode = onToggleMetaMode,
                             onToggleNumericMode = onToggleNumericMode,
                             onToggleEmojiMode = onToggleEmojiMode,
                             onToggleClipboardMode = onToggleClipboardMode,
@@ -450,6 +455,7 @@ fun KeyboardKey(
                             onSwitchLanguage = onSwitchLanguage,
                             onChangePosition = onChangePosition,
                             onKeyEvent = onKeyEvent,
+                            activeModifiers = activeModifiers,
                         )
                         doneKeyAction(scope, action, isDragged, releasedKey, animationHelperSpeed)
                         if (vibrateOnTap) {
@@ -738,6 +744,7 @@ fun KeyboardKey(
                                 onToggleShiftMode = onToggleShiftMode,
                                 onToggleCtrlMode = onToggleCtrlMode,
                                 onToggleAltMode = onToggleAltMode,
+                                onToggleMetaMode = onToggleMetaMode,
                                 onToggleNumericMode = onToggleNumericMode,
                                 onToggleEmojiMode = onToggleEmojiMode,
                                 onToggleClipboardMode = onToggleClipboardMode,
@@ -747,6 +754,7 @@ fun KeyboardKey(
                                 onSwitchLanguage = onSwitchLanguage,
                                 onChangePosition = onChangePosition,
                                 onKeyEvent = onKeyEvent,
+                                activeModifiers = activeModifiers,
                             )
                             doneKeyAction(
                                 scope,
@@ -776,6 +784,7 @@ fun KeyboardKey(
                                         onToggleShiftMode = onToggleShiftMode,
                                         onToggleCtrlMode = onToggleCtrlMode,
                                         onToggleAltMode = onToggleAltMode,
+                                        onToggleMetaMode = onToggleMetaMode,
                                         onToggleNumericMode = onToggleNumericMode,
                                         onToggleEmojiMode = onToggleEmojiMode,
                                         onToggleClipboardMode = onToggleClipboardMode,
@@ -785,6 +794,7 @@ fun KeyboardKey(
                                         onSwitchLanguage = onSwitchLanguage,
                                         onChangePosition = onChangePosition,
                                         onKeyEvent = onKeyEvent,
+                                        activeModifiers = activeModifiers,
                                     )
                                 }
                                 // Play an extra haptic effect on supported devices when slide deleting text

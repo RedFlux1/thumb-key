@@ -38,6 +38,8 @@ import com.dessalines.thumbkey.keyboards.TOGGLE_CLIPBOARD_MODE_TRUE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_CTRL_FALSE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_CTRL_TRUE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_EMOJI_MODE_TRUE_KEYC
+import com.dessalines.thumbkey.keyboards.TOGGLE_META_FALSE_KEYC
+import com.dessalines.thumbkey.keyboards.TOGGLE_META_TRUE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_NUMERIC_MODE_FALSE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_NUMERIC_MODE_TRUE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_SHIFT_FALSE_KEYC
@@ -290,6 +292,8 @@ fun getCommonKeyCFromKeyAction(keyActionSerializable: KeyActionSerializable?): K
         KeyActionSerializable.ToggleCtrlModeFalse -> TOGGLE_CTRL_FALSE_KEYC
         KeyActionSerializable.ToggleAltModeTrue -> TOGGLE_ALT_TRUE_KEYC
         KeyActionSerializable.ToggleAltModeFalse -> TOGGLE_ALT_FALSE_KEYC
+        KeyActionSerializable.ToggleMetaModeTrue -> TOGGLE_META_TRUE_KEYC
+        KeyActionSerializable.ToggleMetaModeFalse -> TOGGLE_META_FALSE_KEYC
         KeyActionSerializable.Left -> SPACEBAR_LEFT_KEYC
         KeyActionSerializable.Right -> SPACEBAR_RIGHT_KEYC
         KeyActionSerializable.Top -> SPACEBAR_PROGRAMMING_TOP_KEYC
@@ -490,6 +494,8 @@ enum class KeyActionSerializable {
     ToggleCtrlModeFalse,
     ToggleAltModeTrue,
     ToggleAltModeFalse,
+    ToggleMetaModeTrue,
+    ToggleMetaModeFalse,
     Left,
     Right,
     Top,

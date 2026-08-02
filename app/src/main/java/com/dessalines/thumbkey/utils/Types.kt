@@ -8,6 +8,8 @@ import arrow.optics.optics
 import com.dessalines.thumbkey.R
 import com.dessalines.thumbkey.textprocessors.TextProcessor
 
+const val META_META_ON = 0x10000 // Custom Meta/Super key modifier flag
+
 @optics
 data class KeyboardDefinitionModes(
     val main: KeyboardC,
@@ -199,6 +201,10 @@ sealed class KeyAction {
     ) : KeyAction()
 
     class ToggleAltMode(
+        val enable: Boolean,
+    ) : KeyAction()
+
+    class ToggleMetaMode(
         val enable: Boolean,
     ) : KeyAction()
 

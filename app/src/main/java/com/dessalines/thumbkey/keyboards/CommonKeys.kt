@@ -233,6 +233,28 @@ val TOGGLE_ALT_FALSE_KEYC =
         color = MUTED,
     )
 
+val TOGGLE_META_TRUE_KEYC =
+    KeyC(
+        display = KeyDisplay.IconDisplay(Icons.Outlined.KeyboardCommandKey),
+        action = ToggleMetaMode(true),
+        color = MUTED,
+    )
+
+val TOGGLE_META_FALSE_KEYC =
+    KeyC(
+        display = KeyDisplay.IconDisplay(Icons.Outlined.KeyboardDoubleArrowDown),
+        action = ToggleMetaMode(false),
+        color = MUTED,
+    )
+
+// Escape key for Vim/terminal use
+val ESCAPE_KEYC =
+    KeyC(
+        display = KeyDisplay.TextDisplay("Esc"),
+        action = SendEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ESCAPE)),
+        color = MUTED,
+    )
+
 val BACKSPACE_KEYC =
     KeyC(
         display = KeyDisplay.IconDisplay(Icons.AutoMirrored.Outlined.KeyboardBackspace),

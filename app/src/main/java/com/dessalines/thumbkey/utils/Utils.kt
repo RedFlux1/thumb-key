@@ -332,6 +332,65 @@ fun swipeDirection(
     }
 }
 
+/**
+ * Maps a lowercase character to its Android KeyEvent keycode.
+ * Used when sending modified keystrokes (Ctrl+X, Alt+F4, etc.).
+ */
+fun charToKeyCode(c: Char): Int =
+    when (c.lowercaseChar()) {
+        'a' -> KeyEvent.KEYCODE_A
+        'b' -> KeyEvent.KEYCODE_B
+        'c' -> KeyEvent.KEYCODE_C
+        'd' -> KeyEvent.KEYCODE_D
+        'e' -> KeyEvent.KEYCODE_E
+        'f' -> KeyEvent.KEYCODE_F
+        'g' -> KeyEvent.KEYCODE_G
+        'h' -> KeyEvent.KEYCODE_H
+        'i' -> KeyEvent.KEYCODE_I
+        'j' -> KeyEvent.KEYCODE_J
+        'k' -> KeyEvent.KEYCODE_K
+        'l' -> KeyEvent.KEYCODE_L
+        'm' -> KeyEvent.KEYCODE_M
+        'n' -> KeyEvent.KEYCODE_N
+        'o' -> KeyEvent.KEYCODE_O
+        'p' -> KeyEvent.KEYCODE_P
+        'q' -> KeyEvent.KEYCODE_Q
+        'r' -> KeyEvent.KEYCODE_R
+        's' -> KeyEvent.KEYCODE_S
+        't' -> KeyEvent.KEYCODE_T
+        'u' -> KeyEvent.KEYCODE_U
+        'v' -> KeyEvent.KEYCODE_V
+        'w' -> KeyEvent.KEYCODE_W
+        'x' -> KeyEvent.KEYCODE_X
+        'y' -> KeyEvent.KEYCODE_Y
+        'z' -> KeyEvent.KEYCODE_Z
+        '0' -> KeyEvent.KEYCODE_0
+        '1' -> KeyEvent.KEYCODE_1
+        '2' -> KeyEvent.KEYCODE_2
+        '3' -> KeyEvent.KEYCODE_3
+        '4' -> KeyEvent.KEYCODE_4
+        '5' -> KeyEvent.KEYCODE_5
+        '6' -> KeyEvent.KEYCODE_6
+        '7' -> KeyEvent.KEYCODE_7
+        '8' -> KeyEvent.KEYCODE_8
+        '9' -> KeyEvent.KEYCODE_9
+        '\t' -> KeyEvent.KEYCODE_TAB
+        '\n' -> KeyEvent.KEYCODE_ENTER
+        ' ' -> KeyEvent.KEYCODE_SPACE
+        ',' -> KeyEvent.KEYCODE_COMMA
+        '.' -> KeyEvent.KEYCODE_PERIOD
+        ';' -> KeyEvent.KEYCODE_SEMICOLON
+        '\'' -> KeyEvent.KEYCODE_APOSTROPHE
+        '[' -> KeyEvent.KEYCODE_LEFT_BRACKET
+        ']' -> KeyEvent.KEYCODE_RIGHT_BRACKET
+        '/' -> KeyEvent.KEYCODE_SLASH
+        '\\' -> KeyEvent.KEYCODE_BACKSLASH
+        '`' -> KeyEvent.KEYCODE_GRAVE
+        '-' -> KeyEvent.KEYCODE_MINUS
+        '=' -> KeyEvent.KEYCODE_EQUALS
+        else -> KeyEvent.KEYCODE_UNKNOWN
+    }
+
 fun performKeyAction(
     action: KeyAction,
     ime: IMEService,
@@ -340,6 +399,7 @@ fun performKeyAction(
     onToggleShiftMode: (enable: Boolean) -> Unit,
     onToggleCtrlMode: (enable: Boolean) -> Unit,
     onToggleAltMode: (enable: Boolean) -> Unit,
+    onToggleMetaMode: (enable: Boolean) -> Unit,
     onToggleNumericMode: (enable: Boolean) -> Unit,
     onToggleEmojiMode: (enable: Boolean) -> Unit,
     onToggleClipboardMode: (enable: Boolean) -> Unit,
@@ -349,18 +409,29 @@ fun performKeyAction(
     onSwitchLanguage: () -> Unit,
     onChangePosition: ((old: KeyboardPosition) -> KeyboardPosition) -> Unit,
     onKeyEvent: () -> Unit,
+    activeModifiers: Int = 0,
 ) {
     when (action) {
         is KeyAction.CommitText -> {
             val text = action.text
-            Log.d(TAG, "committing key text: $text")
-            ime.ignoreNextCursorMove()
+            Log.d(TAG, "committing key text: $text, activeModifiers=$activeModifiers")
 
-            keyboardSettings.textProcessor?.handleCommitText(ime, text)
-                ?: ime.currentInputConnection.commitText(
-                    text,
-                    1,
-                )
+            if (activeModifiers != 0 && text.length == 1 && charToKeyCode(text[0]) != KeyEvent.KEYCODE_UNKNOWN) {
+                // Modifier chord: send KeyEvent with meta flags
+                val keyCode = charToKeyCode(text[0])
+                val ic = ime.currentInputConnection
+                val now = android.os.SystemClock.uptimeMillis()
+                Log.d(TAG, "sending chord: keyCode=$keyCode, metaState=$activeModifiers")
+                ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, keyCode, 0, activeModifiers))
+                ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, keyCode, 0, activeModifiers))
+                ime.ignoreNextCursorMove()
+                onKeyEvent()
+            } else {
+                // Plain text commit (no modifiers, or multi-char text like "https://")
+                ime.ignoreNextCursorMove()
+                keyboardSettings.textProcessor?.handleCommitText(ime, text)
+                    ?: ime.currentInputConnection.commitText(text, 1)
+            }
 
             if (autoCapitalize && keyboardSettings.autoShift) {
                 autoCapitalize(
@@ -375,9 +446,26 @@ fun performKeyAction(
 
         is KeyAction.SendEvent -> {
             val ev = action.event
-            Log.d(TAG, "sending key event: $ev")
-            keyboardSettings.textProcessor?.handleKeyEvent(ime, ev)
-                ?: ime.currentInputConnection.sendKeyEvent(ev)
+            Log.d(TAG, "sending key event: $ev, activeModifiers=$activeModifiers")
+            val modifiedEvent =
+                if (activeModifiers != 0) {
+                    KeyEvent(
+                        ev.downTime,
+                        ev.eventTime,
+                        ev.action,
+                        ev.keyCode,
+                        ev.repeatCount,
+                        ev.metaState or activeModifiers,
+                        ev.deviceId,
+                        ev.scanCode,
+                        ev.flags,
+                        ev.source,
+                    )
+                } else {
+                    ev
+                }
+            keyboardSettings.textProcessor?.handleKeyEvent(ime, modifiedEvent)
+                ?: ime.currentInputConnection.sendKeyEvent(modifiedEvent)
             onKeyEvent()
         }
 
@@ -1238,6 +1326,12 @@ fun performKeyAction(
             val enable = action.enable
             Log.d(TAG, "Toggling Alted: $enable")
             onToggleAltMode(enable)
+        }
+
+        is KeyAction.ToggleMetaMode -> {
+            val enable = action.enable
+            Log.d(TAG, "Toggling Metaed: $enable")
+            onToggleMetaMode(enable)
         }
 
         is KeyAction.ToggleNumericMode -> {
