@@ -1,127 +1,138 @@
 # specs/product/SCOPE_LATEST.yaml — written by scope-work (2026-08-02)
 # Step 1 of the planning spine: scope-work → slice-tasks → plan-work
+#
+# Refined for persistent floating keyboard sub-mode.
+# Previous scope (e01 floating keyboard, shipped) archived.
 
 core_value: >
-  Let users move the Thumb-Key keyboard anywhere on screen as a floating overlay,
-  so it doesn't block content or force awkward hand positions on large screens.
+  Let users keep the floating Thumb-Key keyboard always visible so they can
+  use it like a hardware keyboard — sending key events (arrows, modifiers,
+  shortcuts) to websites and apps without needing a text field focused.
 
 summary: >
-  Thumb-Key currently docks at the bottom of the screen. In landscape mode,
-  on tablets, foldables, or large phones, this wastes screen real estate and
-  forces the user to reach to the bottom bezel. This scope adds a floating
-  mode: when enabled, the keyboard renders as a draggable overlay window
-  (using WindowManager.addView with TYPE_APPLICATION_OVERLAY) instead of the
-  standard IME input view. The keyboard is visually identical to the docked
-  version and follows normal IME focus lifecycle — visible when a text field
-  has focus, hidden when focus is lost.
+  The current floating keyboard follows the IME focus lifecycle: it appears
+  when a text field is focused and disappears when focus is lost. This
+  prevents using the keyboard for hardware-style interactions like navigating
+  web pages with arrow keys, hitting Ctrl+R to refresh, or using Tab to move
+  between elements — all of which work fine on a physical keyboard but are
+  impossible with the current IME because the keyboard hides the moment focus
+  leaves a text field.
 
-  The user toggles floating mode via a YAML-configurable keybinding or a
-  settings toggle. In floating mode, a small drag handle at the top lets the
-  user reposition the keyboard by dragging, or dismiss floating mode entirely
-  with a fling-down gesture. Position persists permanently, stored separately
-  for portrait and landscape orientations. Opacity is user-adjustable in
-  settings.
+  This scope adds a "persistent" sub-mode of floating mode. When enabled,
+  the floating keyboard stays visible regardless of text field focus. It is
+  only dismissed manually by the user (fling-down on the drag handle). Key
+  events (CommitText for letters/numbers, SendEvent for modifiers/shortcuts,
+  and all other KeyActions) work the same whether or not a text field is
+  focused — the IME sends events to the focused window like a hardware
+  keyboard would.
 
-  This scope covers the core floating experience. Per-app configuration,
-  emoji/clipboard mode behavior toggling, and manual coordinate entry are
-  deferred to future work.
+  The feature is a sub-mode: floating mode must be enabled first, then
+  persistent mode can be toggled. A visual indicator on the floating keyboard
+  shows when persistent mode is active. When persistent is off, the floating
+  keyboard behaves exactly as before (follows focus lifecycle).
 
 in_scope:
-  - name: "Floating mode toggle"
+  - name: "Persistent mode toggle"
     description: >
-      YAML keybinding (ToggleFloatingMode action) and settings screen toggle
-      to switch between docked and floating keyboard globally.
-    maps_to: "e01s01"
+      A YAML keybinding (existing ToggleFloatingMode action, long-press or
+      separate binding to toggle persistent) and a settings checkbox to
+      enable persistent floating. Only visible/applicable when floating
+      mode is active.
+    maps_to: "e02s01"
 
-  - name: "Floating overlay window"
+  - name: "IME lifecycle independence"
     description: >
-      Render the keyboard in a WindowManager overlay (TYPE_APPLICATION_OVERLAY)
-      instead of the standard IME input view. Window lifecycle synchronized with
-      text field focus (onStartInput → show, onFinishInput → hide).
-    maps_to: "e01s02"
+      When persistent is enabled, the floating overlay does not hide on
+      onFinishInput() or onWindowHidden(). The IME stays alive via
+      onEvaluateInputViewShown() returning true. Only a manual
+      fling-down or explicit dismiss action hides the keyboard.
+    maps_to: "e02s01"
 
-  - name: "Drag-to-reposition"
+  - name: "Hardware-keyboard-style input"
     description: >
-      Drag handle at top of keyboard. User drags to reposition the floating
-      window anywhere on screen. Clamped to screen bounds.
-    maps_to: "e01s03"
+      All key actions work without an InputConnection. Letter/number keys
+      send KeyEvents (KEYCODE_A, etc.). Modifier chords (Ctrl+C, Ctrl+V,
+      Alt+Tab) compose properly. Navigation keys (arrows, Tab, Esc, Page
+      Up/Down) dispatch as KeyEvents to the focused window.
+    maps_to: "e02s02"
 
-  - name: "Fling-down to dismiss"
+  - name: "Visual persistent indicator"
     description: >
-      Fling gesture on the drag handle with downward velocity > threshold
-      disables floating mode and returns to docked keyboard.
-    maps_to: "e01s03"
+      A small visual element (lock icon, different drag handle color, or
+      subtle border) on the floating keyboard that indicates persistent
+      mode is active. Helps the user understand why the keyboard isn't
+      auto-hiding.
+    maps_to: "e02s01"
 
-  - name: "Position persistence"
+  - name: "Settings UI"
     description: >
-      Floating window X/Y position saved to Room DB, keyed by orientation
-      (portrait vs landscape). Persists across sessions and reboots.
-    maps_to: "e01s04"
-
-  - name: "Tap-through to app"
-    description: >
-      Touches outside the floating keyboard pass through to the underlying app.
-      Keyboard hides when the text field loses focus, not on outside tap.
-    maps_to: "e01s02"
-
-  - name: "Opacity setting"
-    description: >
-      User-adjustable opacity slider in floating mode settings. Applied to the
-      floating window. Persisted in Room DB.
-    maps_to: "e01s05"
-
-  - name: "Settings screen"
-    description: >
-      Floating mode settings accessible from the main Thumb-Key settings:
-      toggle on/off and opacity slider.
-    maps_to: "e01s05"
+      A "Keep keyboard visible" checkbox in the floating mode settings
+      section. Only enabled when floating mode is on. Default: off.
+      Persisted in Room DB as a new boolean field.
+    maps_to: "e02s03"
 
 out_of_scope:
-  - item: "Per-app floating mode"
+  - item: "Auto-show on device unlock/boot"
     reason: >
-      Deferred. Adds complexity (app detection, deny list, per-app prefs).
-      Global toggle covers the primary use case.
+      Not requested. The keyboard stays visible once opened, but the user
+      must initially bring it up by focusing a text field or toggling the
+      IME. Auto-show requires accessibility service or notification
+      listener — significant complexity for marginal value.
 
-  - item: "Emoji/clipboard dock-vs-float behavior toggle"
+  - item: "Per-app persistence"
     reason: >
-      Deferred. Prior implementation had this, but it added lifecycle
-      complexity. Architecture should not preclude adding it later, but
-      initial version defaults to docked emoji/clipboard (standard behavior).
+      Same reasoning as floating mode — deferred. Global toggle covers the
+      primary use case. Per-app settings add deny-list complexity.
 
-  - item: "Manual X/Y position input in settings"
+  - item: "Auto-focus nearest text field on keypress"
     reason: >
-      Not valuable. Position learned from drag gestures is more intuitive
-      and avoids coordinate-guessing UX.
+      Not a hardware keyboard behavior. Hardware keyboards don't magically
+      focus text fields — the user navigates to them with Tab or taps.
+      Letter keys when nothing is focused send key events to the window
+      (which may or may not handle them, same as a hardware keyboard).
 
-  - item: "Floating-specific keyboard size controls"
+  - item: "Persistent mode in docked (non-floating) keyboard"
     reason: >
-      Existing keyboard size settings apply. No separate size control needed
-      — the floating keyboard inherits the same size.
+      Persistent mode is a floating-only feature. The docked keyboard
+      already has "Show on-screen keyboard" setting for always-visible
+      behavior. Persistent floating is for the overlay use case.
 
-  - item: "Resize-from-corner/edge handles"
+  - item: "Customizable persistent indicator"
     reason: >
-      Deferred. Adds gesture complexity. Keyboard size is already
-      configurable in settings.
+      Visual indicator is a fixed design element. No per-user theming or
+      positioning of the indicator — it follows a standard placement.
+
+  - item: "IME-aware key event injection (instrumenting other apps)"
+    reason: >
+      Key events are dispatched through the standard
+      InputMethodService.sendDownUpKeyEvents() and
+      currentInputConnection.sendKeyEvent() paths. When InputConnection
+      is null, key events go to the focused window via dispatchKeyEvent().
+      No accessibility service or instrumentation needed.
 
 constraints:
-  - "Android 8.0+ (API 26) — minimum for TYPE_APPLICATION_OVERLAY"
-  - "Must coexist with existing modifier support (Ctrl/Alt/Meta in main)"
-  - "All source files committed (FloatingModeRepository, ViewModel, etc.)"
-  - "Must not break existing docked keyboard behavior when floating is disabled"
-  - "No new external dependencies beyond what Thumb-Key already uses"
+  - "Must be a sub-mode of floating — floating must be enabled first"
+  - "Floating keyboard with persistent=off must behave identically to current behavior (no regression)"
+  - "Docked keyboard behavior unchanged by any persistent mode changes"
+  - "Must not use accessibility service or system-level permissions"
+  - "Android 8.0+ (API 26) — same as floating mode"
+  - "No new external dependencies"
+  - "All source files committed"
+  - "Preflight green: ./gradlew lintKotlin lint assembleDebug"
 
 success_criteria:
-  - "Floating keyboard appears when text field focused with floating mode enabled"
-  - "Floating keyboard hides when text field loses focus"
-  - "Drag handle repositions the floating keyboard anywhere on screen"
-  - "Fling-down on drag handle disables floating and returns to docked"
-  - "Position survives app switch, orientation change, and reboot"
-  - "Taps on app content (not keyboard) pass through and work correctly"
-  - "When floating mode is disabled, docked keyboard works identically to before"
-  - "Opacity slider changes take effect immediately"
+  - "With persistent enabled, floating keyboard stays visible after text field loses focus"
+  - "Fling-down dismisses the keyboard (hides overlay AND IME)"
+  - "Ctrl+letter shortcuts (e.g. Ctrl+R, Ctrl+T) work in a web browser without a text field focused"
+  - "Arrow keys and Tab navigate web pages without a text field focused"
+  - "Letter/number keys send KeyEvents when no InputConnection exists"
+  - "With persistent disabled, floating keyboard hides on focus loss (unchanged behavior)"
+  - "Docked keyboard behavior unchanged in all cases"
+  - "Setting persists across app restart"
+  - "Visual indicator shows/hides correctly when persistent is toggled"
   - "Preflight green: ./gradlew lintKotlin lint assembleDebug"
 
 references:
   - "../planning-context.yaml"
   - "../tech-architecture/tech-stack.md"
-  - "../../../../thumb-key-modifier-plan.md"
+  - "../../../thumb-key-modifier-plan.md"

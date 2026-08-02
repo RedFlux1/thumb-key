@@ -2,17 +2,17 @@
 # Auto-managed by bigpowers skills. Do not edit manually while skills are active.
 
 session:
-  active_epic: null
+  active_epic: e02
   active_story: null
   workflow_mode: solo-git
-  last_skill: survey-context
+  last_skill: plan-work
 
 handoff:
-  next_skill: survey-context
+  next_skill: kickoff-branch
   branch: null
   worktree: null
-  epic_dir: null
+  epic_dir: specs/epics/e02-persistent-floating
 
 completed:
   e01: floating-keyboard (committed as 88f6e93)
-  e02: modifier-support (committed as 091e1c8..b767ae9, not planned via bigpowers)
+  e00: modifier-support (committed as 091e1c8..b767ae9, not planned via bigpowers)
