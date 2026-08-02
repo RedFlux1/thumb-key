@@ -17,3 +17,10 @@ app/schemas
 .classpath
 .kotlin
 build.sh
+# Local development files
+release.keystore
+mise.toml
+key-modifications.yaml
+test_window.kt
+test_window2.kt
+.zcode/
