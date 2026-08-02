@@ -1,0 +1,10 @@
+# Thumb-Key Session State
+# Auto-managed by bigpowers skills. Do not edit manually while skills are active.
+
+session:
+  active_epic: null
+  active_story: null
+  workflow_mode: solo-git
+  last_skill: seed-conventions
+
+handoff: null
