@@ -425,6 +425,7 @@ fun performKeyAction(
                 ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, keyCode, 0, activeModifiers))
                 ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, keyCode, 0, activeModifiers))
                 ime.ignoreNextCursorMove()
+                onKeyEvent()
             } else {
                 // Plain text commit (no modifiers, or multi-char text like "https://")
                 ime.ignoreNextCursorMove()
