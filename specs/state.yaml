@@ -8,9 +8,9 @@ session:
   last_skill: plan-work
 
 handoff:
-  next_skill: kickoff-branch
-  branch: null
-  worktree: null
+  next_skill: develop-tdd
+  branch: feat/persistent-floating
+  worktree: /home/peder/Documents/thumbType/feat-persistent-floating
   epic_dir: specs/epics/e02-persistent-floating
 
 completed:
