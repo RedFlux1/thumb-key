@@ -385,6 +385,7 @@ fun KeyboardScreen(
                                                 KeyboardMode.MAIN
                                             }
                                     },
+                                    onToggleMetaMode = { enable -> },
                                     onToggleNumericMode = { enable ->
                                         mode =
                                             if (enable) {
@@ -568,6 +569,7 @@ fun KeyboardScreen(
                                                 KeyboardMode.MAIN
                                             }
                                     },
+                                    onToggleMetaMode = { enable -> },
                                     onToggleNumericMode = { enable ->
                                         mode =
                                             if (enable) {
@@ -855,6 +857,7 @@ fun KeyboardScreen(
                                                     KeyboardMode.MAIN
                                                 }
                                         },
+                                        onToggleMetaMode = { enable -> },
                                         onToggleNumericMode = { enable ->
                                             mode =
                                                 if (enable) {
