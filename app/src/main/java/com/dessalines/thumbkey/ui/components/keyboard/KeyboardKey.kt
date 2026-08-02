@@ -144,6 +144,7 @@ fun KeyboardKey(
     onSwitchLanguage: () -> Unit,
     onChangePosition: ((old: KeyboardPosition) -> KeyboardPosition) -> Unit,
     onKeyEvent: () -> Unit,
+    activeModifiers: Int = 0,
     oppositeCaseKey: KeyItemC? = null,
     numericKey: KeyItemC? = null,
     dragReturnEnabled: Boolean,
@@ -430,6 +431,7 @@ fun KeyboardKey(
                         onSwitchLanguage = onSwitchLanguage,
                         onChangePosition = onChangePosition,
                         onKeyEvent = onKeyEvent,
+                        activeModifiers = activeModifiers,
                     )
                     doneKeyAction(scope, action, isDragged, releasedKey, animationHelperSpeed)
                 },
@@ -453,6 +455,7 @@ fun KeyboardKey(
                             onSwitchLanguage = onSwitchLanguage,
                             onChangePosition = onChangePosition,
                             onKeyEvent = onKeyEvent,
+                            activeModifiers = activeModifiers,
                         )
                         doneKeyAction(scope, action, isDragged, releasedKey, animationHelperSpeed)
                         if (vibrateOnTap) {
@@ -751,6 +754,7 @@ fun KeyboardKey(
                                 onSwitchLanguage = onSwitchLanguage,
                                 onChangePosition = onChangePosition,
                                 onKeyEvent = onKeyEvent,
+                                activeModifiers = activeModifiers,
                             )
                             doneKeyAction(
                                 scope,
@@ -790,6 +794,7 @@ fun KeyboardKey(
                                         onSwitchLanguage = onSwitchLanguage,
                                         onChangePosition = onChangePosition,
                                         onKeyEvent = onKeyEvent,
+                                        activeModifiers = activeModifiers,
                                     )
                                 }
                                 // Play an extra haptic effect on supported devices when slide deleting text

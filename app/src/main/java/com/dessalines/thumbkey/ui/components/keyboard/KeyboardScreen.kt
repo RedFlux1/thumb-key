@@ -377,6 +377,7 @@ fun KeyboardScreen(
                                     hideLetters = hideLetters,
                                     hideSymbols = hideSymbols,
                                     capsLock = capsLock,
+                                    activeModifiers = activeModifiers,
                                     animationSpeed = settings?.animationSpeed ?: DEFAULT_ANIMATION_SPEED,
                                     animationHelperSpeed = settings?.animationHelperSpeed ?: DEFAULT_ANIMATION_HELPER_SPEED,
                                     minSwipeLength = settings?.minSwipeLength ?: DEFAULT_MIN_SWIPE_LENGTH,
@@ -581,6 +582,7 @@ fun KeyboardScreen(
                                     hideLetters = hideLetters,
                                     hideSymbols = hideSymbols,
                                     capsLock = capsLock,
+                                    activeModifiers = activeModifiers,
                                     animationSpeed =
                                         settings?.animationSpeed
                                             ?: DEFAULT_ANIMATION_SPEED,
@@ -893,6 +895,7 @@ fun KeyboardScreen(
                                         hideLetters = hideLetters,
                                         hideSymbols = hideSymbols,
                                         capsLock = capsLock,
+                                        activeModifiers = activeModifiers,
                                         animationSpeed =
                                             settings?.animationSpeed
                                                 ?: DEFAULT_ANIMATION_SPEED,
