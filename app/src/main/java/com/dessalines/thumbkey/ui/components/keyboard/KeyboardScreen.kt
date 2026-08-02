@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.util.Log
 import android.view.HapticFeedbackConstants
+import android.view.KeyEvent
 import android.view.inputmethod.InputConnection.CURSOR_UPDATE_MONITOR
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -84,6 +85,7 @@ import com.dessalines.thumbkey.utils.KeyAction
 import com.dessalines.thumbkey.utils.KeyboardLayout
 import com.dessalines.thumbkey.utils.KeyboardMode
 import com.dessalines.thumbkey.utils.KeyboardPosition
+import com.dessalines.thumbkey.utils.META_META_ON
 import com.dessalines.thumbkey.utils.SlideType
 import com.dessalines.thumbkey.utils.TAG
 import com.dessalines.thumbkey.utils.getAutoKeyWidth
@@ -136,15 +138,38 @@ fun KeyboardScreen(
         mutableStateOf(false)
     }
 
+    // Modifier bitmask: KeyEvent.META_SHIFT_ON | KeyEvent.META_CTRL_ON | KeyEvent.META_ALT_ON | META_META_ON
+    var activeModifiers by remember { mutableStateOf(0) }
+    // Locked modifiers stay active across multiple keys (double-tap to lock)
+    var modLocked by remember { mutableStateOf(0) }
+
     // TODO get rid of this crap
     val lastAction = remember { mutableStateOf<Pair<KeyAction, TimeMark>?>(null) }
 
     val clipboardItems by clipboardRepository.allClipboardItems.observeAsState(initial = emptyList())
 
+    // Keyboard layout: if mode is MAIN, check activeModifiers for ctrled/alted overlays.
+    // Dedicated layouts take priority; layouts without them fall through to shifted/main.
     val keyboard =
         when (mode) {
             KeyboardMode.MAIN -> {
-                keyboardDefinition.modes.main
+                when {
+                    (activeModifiers and KeyEvent.META_CTRL_ON != 0) && keyboardDefinition.modes.ctrled != null -> {
+                        keyboardDefinition.modes.ctrled!!
+                    }
+
+                    (activeModifiers and KeyEvent.META_ALT_ON != 0) && keyboardDefinition.modes.alted != null -> {
+                        keyboardDefinition.modes.alted!!
+                    }
+
+                    (activeModifiers and KeyEvent.META_SHIFT_ON != 0) || capsLock -> {
+                        keyboardDefinition.modes.shifted
+                    }
+
+                    else -> {
+                        keyboardDefinition.modes.main
+                    }
+                }
             }
 
             KeyboardMode.SHIFTED -> {
@@ -370,22 +395,50 @@ fun KeyboardScreen(
                                             }
                                     },
                                     onToggleCtrlMode = { enable ->
-                                        mode =
-                                            if (enable) {
-                                                KeyboardMode.CTRLED
+                                        if (enable) {
+                                            if (activeModifiers and KeyEvent.META_CTRL_ON == 0) {
+                                                activeModifiers = activeModifiers or KeyEvent.META_CTRL_ON
+                                            } else if (modLocked and KeyEvent.META_CTRL_ON == 0) {
+                                                modLocked = modLocked or KeyEvent.META_CTRL_ON
                                             } else {
-                                                KeyboardMode.MAIN
+                                                activeModifiers = activeModifiers and KeyEvent.META_CTRL_ON.inv()
+                                                modLocked = modLocked and KeyEvent.META_CTRL_ON.inv()
                                             }
+                                        } else {
+                                            activeModifiers = activeModifiers and KeyEvent.META_CTRL_ON.inv()
+                                            modLocked = modLocked and KeyEvent.META_CTRL_ON.inv()
+                                        }
                                     },
                                     onToggleAltMode = { enable ->
-                                        mode =
-                                            if (enable) {
-                                                KeyboardMode.ALTED
+                                        if (enable) {
+                                            if (activeModifiers and KeyEvent.META_ALT_ON == 0) {
+                                                activeModifiers = activeModifiers or KeyEvent.META_ALT_ON
+                                            } else if (modLocked and KeyEvent.META_ALT_ON == 0) {
+                                                modLocked = modLocked or KeyEvent.META_ALT_ON
                                             } else {
-                                                KeyboardMode.MAIN
+                                                activeModifiers = activeModifiers and KeyEvent.META_ALT_ON.inv()
+                                                modLocked = modLocked and KeyEvent.META_ALT_ON.inv()
                                             }
+                                        } else {
+                                            activeModifiers = activeModifiers and KeyEvent.META_ALT_ON.inv()
+                                            modLocked = modLocked and KeyEvent.META_ALT_ON.inv()
+                                        }
                                     },
-                                    onToggleMetaMode = { enable -> },
+                                    onToggleMetaMode = { enable ->
+                                        if (enable) {
+                                            if (activeModifiers and META_META_ON == 0) {
+                                                activeModifiers = activeModifiers or META_META_ON
+                                            } else if (modLocked and META_META_ON == 0) {
+                                                modLocked = modLocked or META_META_ON
+                                            } else {
+                                                activeModifiers = activeModifiers and META_META_ON.inv()
+                                                modLocked = modLocked and META_META_ON.inv()
+                                            }
+                                        } else {
+                                            activeModifiers = activeModifiers and META_META_ON.inv()
+                                            modLocked = modLocked and META_META_ON.inv()
+                                        }
+                                    },
                                     onToggleNumericMode = { enable ->
                                         mode =
                                             if (enable) {
@@ -433,13 +486,9 @@ fun KeyboardScreen(
                                     },
                                     onChangePosition = onChangePosition,
                                     onKeyEvent = {
-                                        when (mode) {
-                                            KeyboardMode.CTRLED, KeyboardMode.ALTED -> {
-                                                mode = KeyboardMode.MAIN
-                                            }
-
-                                            else -> {}
-                                        }
+                                        // Clear one-shot modifiers (keep locked ones and Shift)
+                                        val locked = modLocked
+                                        activeModifiers = (activeModifiers and KeyEvent.META_SHIFT_ON) or locked
                                     },
                                     dragReturnEnabled = dragReturnEnabled,
                                     circularDragEnabled = circularDragEnabled,
@@ -554,22 +603,50 @@ fun KeyboardScreen(
                                             }
                                     },
                                     onToggleCtrlMode = { enable ->
-                                        mode =
-                                            if (enable) {
-                                                KeyboardMode.CTRLED
+                                        if (enable) {
+                                            if (activeModifiers and KeyEvent.META_CTRL_ON == 0) {
+                                                activeModifiers = activeModifiers or KeyEvent.META_CTRL_ON
+                                            } else if (modLocked and KeyEvent.META_CTRL_ON == 0) {
+                                                modLocked = modLocked or KeyEvent.META_CTRL_ON
                                             } else {
-                                                KeyboardMode.MAIN
+                                                activeModifiers = activeModifiers and KeyEvent.META_CTRL_ON.inv()
+                                                modLocked = modLocked and KeyEvent.META_CTRL_ON.inv()
                                             }
+                                        } else {
+                                            activeModifiers = activeModifiers and KeyEvent.META_CTRL_ON.inv()
+                                            modLocked = modLocked and KeyEvent.META_CTRL_ON.inv()
+                                        }
                                     },
                                     onToggleAltMode = { enable ->
-                                        mode =
-                                            if (enable) {
-                                                KeyboardMode.ALTED
+                                        if (enable) {
+                                            if (activeModifiers and KeyEvent.META_ALT_ON == 0) {
+                                                activeModifiers = activeModifiers or KeyEvent.META_ALT_ON
+                                            } else if (modLocked and KeyEvent.META_ALT_ON == 0) {
+                                                modLocked = modLocked or KeyEvent.META_ALT_ON
                                             } else {
-                                                KeyboardMode.MAIN
+                                                activeModifiers = activeModifiers and KeyEvent.META_ALT_ON.inv()
+                                                modLocked = modLocked and KeyEvent.META_ALT_ON.inv()
                                             }
+                                        } else {
+                                            activeModifiers = activeModifiers and KeyEvent.META_ALT_ON.inv()
+                                            modLocked = modLocked and KeyEvent.META_ALT_ON.inv()
+                                        }
                                     },
-                                    onToggleMetaMode = { enable -> },
+                                    onToggleMetaMode = { enable ->
+                                        if (enable) {
+                                            if (activeModifiers and META_META_ON == 0) {
+                                                activeModifiers = activeModifiers or META_META_ON
+                                            } else if (modLocked and META_META_ON == 0) {
+                                                modLocked = modLocked or META_META_ON
+                                            } else {
+                                                activeModifiers = activeModifiers and META_META_ON.inv()
+                                                modLocked = modLocked and META_META_ON.inv()
+                                            }
+                                        } else {
+                                            activeModifiers = activeModifiers and META_META_ON.inv()
+                                            modLocked = modLocked and META_META_ON.inv()
+                                        }
+                                    },
                                     onToggleNumericMode = { enable ->
                                         mode =
                                             if (enable) {
@@ -619,13 +696,9 @@ fun KeyboardScreen(
                                     },
                                     onChangePosition = onChangePosition,
                                     onKeyEvent = {
-                                        when (mode) {
-                                            KeyboardMode.CTRLED, KeyboardMode.ALTED -> {
-                                                mode = KeyboardMode.MAIN
-                                            }
-
-                                            else -> {}
-                                        }
+                                        // Clear one-shot modifiers (keep locked ones and Shift)
+                                        val locked = modLocked
+                                        activeModifiers = (activeModifiers and KeyEvent.META_SHIFT_ON) or locked
                                     },
                                     dragReturnEnabled = dragReturnEnabled,
                                     circularDragEnabled = circularDragEnabled,
@@ -785,7 +858,11 @@ fun KeyboardScreen(
                                     val ghostKey =
                                         if (ghostKeysEnabled) {
                                             when (mode) {
-                                                KeyboardMode.MAIN, KeyboardMode.SHIFTED, KeyboardMode.CTRLED, KeyboardMode.ALTED -> {
+                                                KeyboardMode.MAIN,
+                                                KeyboardMode.SHIFTED,
+                                                KeyboardMode.CTRLED,
+                                                KeyboardMode.ALTED,
+                                                -> {
                                                     keyboardDefinition.modes.numeric
                                                 }
 
@@ -842,22 +919,50 @@ fun KeyboardScreen(
                                                 }
                                         },
                                         onToggleCtrlMode = { enable ->
-                                            mode =
-                                                if (enable) {
-                                                    KeyboardMode.CTRLED
+                                            if (enable) {
+                                                if (activeModifiers and KeyEvent.META_CTRL_ON == 0) {
+                                                    activeModifiers = activeModifiers or KeyEvent.META_CTRL_ON
+                                                } else if (modLocked and KeyEvent.META_CTRL_ON == 0) {
+                                                    modLocked = modLocked or KeyEvent.META_CTRL_ON
                                                 } else {
-                                                    KeyboardMode.MAIN
+                                                    activeModifiers = activeModifiers and KeyEvent.META_CTRL_ON.inv()
+                                                    modLocked = modLocked and KeyEvent.META_CTRL_ON.inv()
                                                 }
+                                            } else {
+                                                activeModifiers = activeModifiers and KeyEvent.META_CTRL_ON.inv()
+                                                modLocked = modLocked and KeyEvent.META_CTRL_ON.inv()
+                                            }
                                         },
                                         onToggleAltMode = { enable ->
-                                            mode =
-                                                if (enable) {
-                                                    KeyboardMode.ALTED
+                                            if (enable) {
+                                                if (activeModifiers and KeyEvent.META_ALT_ON == 0) {
+                                                    activeModifiers = activeModifiers or KeyEvent.META_ALT_ON
+                                                } else if (modLocked and KeyEvent.META_ALT_ON == 0) {
+                                                    modLocked = modLocked or KeyEvent.META_ALT_ON
                                                 } else {
-                                                    KeyboardMode.MAIN
+                                                    activeModifiers = activeModifiers and KeyEvent.META_ALT_ON.inv()
+                                                    modLocked = modLocked and KeyEvent.META_ALT_ON.inv()
                                                 }
+                                            } else {
+                                                activeModifiers = activeModifiers and KeyEvent.META_ALT_ON.inv()
+                                                modLocked = modLocked and KeyEvent.META_ALT_ON.inv()
+                                            }
                                         },
-                                        onToggleMetaMode = { enable -> },
+                                        onToggleMetaMode = { enable ->
+                                            if (enable) {
+                                                if (activeModifiers and META_META_ON == 0) {
+                                                    activeModifiers = activeModifiers or META_META_ON
+                                                } else if (modLocked and META_META_ON == 0) {
+                                                    modLocked = modLocked or META_META_ON
+                                                } else {
+                                                    activeModifiers = activeModifiers and META_META_ON.inv()
+                                                    modLocked = modLocked and META_META_ON.inv()
+                                                }
+                                            } else {
+                                                activeModifiers = activeModifiers and META_META_ON.inv()
+                                                modLocked = modLocked and META_META_ON.inv()
+                                            }
+                                        },
                                         onToggleNumericMode = { enable ->
                                             mode =
                                                 if (enable) {
@@ -893,14 +998,9 @@ fun KeyboardScreen(
                                         },
                                         onToggleHideLetters = onToggleHideLetters,
                                         onKeyEvent = {
-                                            when (mode) {
-                                                KeyboardMode.CTRLED, KeyboardMode.ALTED -> {
-                                                    mode =
-                                                        KeyboardMode.MAIN
-                                                }
-
-                                                else -> {}
-                                            }
+                                            // Clear one-shot modifiers (keep locked ones and Shift)
+                                            val locked = modLocked
+                                            activeModifiers = (activeModifiers and KeyEvent.META_SHIFT_ON) or locked
                                         },
                                         onAutoCapitalize = { enable ->
                                             if (mode !== KeyboardMode.NUMERIC) {
