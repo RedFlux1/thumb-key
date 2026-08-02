@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -853,6 +854,21 @@ fun KeyboardScreen(
                     )
                 }
                 Column(modifier = modifierPositionPadding) {
+                    // Modifier status indicator
+                    if (activeModifiers != 0 && (mode == KeyboardMode.MAIN || mode == KeyboardMode.SHIFTED)) {
+                        Text(
+                            text =
+                                buildString {
+                                    if (activeModifiers and KeyEvent.META_CTRL_ON != 0) append("Ctrl ")
+                                    if (activeModifiers and KeyEvent.META_ALT_ON != 0) append("Alt ")
+                                    if (activeModifiers and KeyEvent.META_SHIFT_ON != 0) append("Shift ")
+                                    if (activeModifiers and META_META_ON != 0) append("Meta ")
+                                    if (modLocked != 0) append("\uD83D\uDD12")
+                                },
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                        )
+                    }
                     keyboard.arr.forEachIndexed { i, row ->
                         Row {
                             row.forEachIndexed { j, key ->
