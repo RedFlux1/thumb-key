@@ -254,6 +254,13 @@ val TOGGLE_FLOATING_MODE_KEYC =
         color = MUTED,
     )
 
+val TOGGLE_PERSISTENT_MODE_KEYC =
+    KeyC(
+        display = KeyDisplay.IconDisplay(Icons.Outlined.PushPin),
+        action = TogglePersistentMode(),
+        color = MUTED,
+    )
+
 // Escape key for Vim/terminal use
 val ESCAPE_KEYC =
     KeyC(

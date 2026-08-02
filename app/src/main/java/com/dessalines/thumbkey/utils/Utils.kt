@@ -415,22 +415,35 @@ fun performKeyAction(
         is KeyAction.CommitText -> {
             val text = action.text
             Log.d(TAG, "committing key text: $text, activeModifiers=$activeModifiers")
+            val ic = ime.currentInputConnection
 
             if (activeModifiers != 0 && text.length == 1 && charToKeyCode(text[0]) != KeyEvent.KEYCODE_UNKNOWN) {
                 // Modifier chord: send KeyEvent with meta flags
                 val keyCode = charToKeyCode(text[0])
-                val ic = ime.currentInputConnection
                 val now = android.os.SystemClock.uptimeMillis()
                 Log.d(TAG, "sending chord: keyCode=$keyCode, metaState=$activeModifiers")
-                ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, keyCode, 0, activeModifiers))
-                ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, keyCode, 0, activeModifiers))
+                if (ic != null) {
+                    ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, keyCode, 0, activeModifiers))
+                    ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, keyCode, 0, activeModifiers))
+                } else {
+                    ime.sendDownUpKeyEvents(keyCode)
+                }
                 ime.ignoreNextCursorMove()
                 onKeyEvent()
-            } else {
-                // Plain text commit (no modifiers, or multi-char text like "https://")
+            } else if (text.length == 1 && charToKeyCode(text[0]) != KeyEvent.KEYCODE_UNKNOWN && ic == null) {
+                // Single char, no IC: send as key event
+                val keyCode = charToKeyCode(text[0])
+                Log.d(TAG, "sending key event without IC: keyCode=$keyCode")
+                ime.sendDownUpKeyEvents(keyCode)
+                onKeyEvent()
+            } else if (ic != null) {
+                // Plain text commit via InputConnection
                 ime.ignoreNextCursorMove()
                 keyboardSettings.textProcessor?.handleCommitText(ime, text)
-                    ?: ime.currentInputConnection.commitText(text, 1)
+                    ?: ic.commitText(text, 1)
+            } else {
+                // No IC, multi-char text: can't send as key event, skip
+                Log.d(TAG, "skipping multi-char commit without InputConnection: $text")
             }
 
             if (autoCapitalize && keyboardSettings.autoShift) {
@@ -464,8 +477,13 @@ fun performKeyAction(
                 } else {
                     ev
                 }
-            keyboardSettings.textProcessor?.handleKeyEvent(ime, modifiedEvent)
-                ?: ime.currentInputConnection.sendKeyEvent(modifiedEvent)
+            val ic = ime.currentInputConnection
+            if (ic != null) {
+                keyboardSettings.textProcessor?.handleKeyEvent(ime, modifiedEvent)
+                    ?: ic.sendKeyEvent(modifiedEvent)
+            } else {
+                ime.sendDownUpKeyEvents(modifiedEvent.keyCode)
+            }
             onKeyEvent()
         }
 
@@ -473,8 +491,13 @@ fun performKeyAction(
         // on their repos.
         is KeyAction.DeleteKeyAction -> {
             val ev = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
-            keyboardSettings.textProcessor?.handleKeyEvent(ime, ev)
-                ?: ime.currentInputConnection.sendKeyEvent(ev)
+            val ic = ime.currentInputConnection
+            if (ic != null) {
+                keyboardSettings.textProcessor?.handleKeyEvent(ime, ev)
+                    ?: ic.sendKeyEvent(ev)
+            } else {
+                ime.sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
+            }
         }
 
         // Alternative delete that uses deleteSurroundingText instead of KEYCODE_DEL.
@@ -1339,6 +1362,11 @@ fun performKeyAction(
             Handler(ime.mainLooper).post { ime.toggleFloatingMode() }
         }
 
+        is KeyAction.TogglePersistentMode -> {
+            Log.d(TAG, "Toggling persistent mode")
+            Handler(ime.mainLooper).post { ime.togglePersistentMode() }
+        }
+
         is KeyAction.ToggleNumericMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Numeric: $enable")
@@ -1742,13 +1770,14 @@ private fun autoCapitalize(
     }
 }
 
-fun autoCapitalizeCheck(ime: IMEService): Boolean = ime.currentInputConnection.getCursorCapsMode(ime.currentInputEditorInfo.inputType) > 0
+fun autoCapitalizeCheck(ime: IMEService): Boolean =
+    ime.currentInputConnection?.getCursorCapsMode(ime.currentInputEditorInfo?.inputType ?: 0) ?: 0 > 0
 
 /**
  * Avoid capitalizing or switching to shifted mode in certain edit boxes
  */
 fun isUriOrEmailOrPasswordField(ime: IMEService): Boolean {
-    val inputType = ime.currentInputEditorInfo.inputType and (InputType.TYPE_MASK_VARIATION)
+    val inputType = (ime.currentInputEditorInfo?.inputType ?: 0) and (InputType.TYPE_MASK_VARIATION)
     return listOf(
         InputType.TYPE_TEXT_VARIATION_URI,
         InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS,
@@ -1762,7 +1791,7 @@ fun isUriOrEmailOrPasswordField(ime: IMEService): Boolean {
 }
 
 fun isPasswordField(ime: IMEService): Boolean {
-    val inputType = ime.currentInputEditorInfo.inputType and (InputType.TYPE_MASK_VARIATION)
+    val inputType = (ime.currentInputEditorInfo?.inputType ?: 0) and (InputType.TYPE_MASK_VARIATION)
     return listOf(
         InputType.TYPE_TEXT_VARIATION_PASSWORD,
         InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD,

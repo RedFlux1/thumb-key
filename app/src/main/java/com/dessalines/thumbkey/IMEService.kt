@@ -26,6 +26,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.dessalines.thumbkey.db.DEFAULT_CLIPBOARD_HISTORY_ENABLED
 import com.dessalines.thumbkey.db.DEFAULT_DISABLE_FULLSCREEN_EDITOR
 import com.dessalines.thumbkey.db.DEFAULT_FLOATING_MODE_ENABLED
+import com.dessalines.thumbkey.db.DEFAULT_PERSISTENT_FLOATING_ENABLED
 import com.dessalines.thumbkey.db.DEFAULT_SHOW_ON_SCREEN_KEYBOARD
 import com.dessalines.thumbkey.db.DEFAULT_USE_PRIVATE_CLIPBOARD
 import com.dessalines.thumbkey.db.FloatingModeRepository
@@ -51,6 +52,13 @@ class IMEService :
         val settings = app.appSettingsRepository.appSettings.value
         val enabled = (settings?.floatingModeEnabled ?: DEFAULT_FLOATING_MODE_ENABLED).toBool()
         return enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+    }
+
+    internal fun isPersistentFloatingEnabled(): Boolean {
+        if (!isFloatingModeEnabled()) return false
+        val app = application as ThumbkeyApplication
+        val settings = app.appSettingsRepository.appSettings.value
+        return (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()
     }
 
     internal fun isExpandInFloatingEnabled(): Boolean {
@@ -163,17 +171,23 @@ class IMEService :
     internal fun onFlingDismiss() {
         hideFloating()
         val app = application as ThumbkeyApplication
+        val settings = app.appSettingsRepository.appSettings.value
+        val isPersistent = (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()
         app.appSettingsRepository.updateOtherSettings(
             OtherSettingsUpdate(
                 id = 1,
                 showOnScreenKeyboard =
-                    app.appSettingsRepository.appSettings.value
-                        ?.showOnScreenKeyboard
+                    settings?.showOnScreenKeyboard
                         ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
-                floatingModeEnabled = 0,
+                floatingModeEnabled = if (isPersistent) 1 else 0,
+                persistentFloatingEnabled = 0,
             ),
         )
-        setInputView(setupView())
+        if (isPersistent) {
+            requestHideSelf(0)
+        } else {
+            setInputView(setupView())
+        }
     }
 
     private fun hideFloating() {
@@ -201,6 +215,9 @@ class IMEService :
                     settings?.showOnScreenKeyboard
                         ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
                 floatingModeEnabled = 0,
+                persistentFloatingEnabled =
+                    settings?.persistentFloatingEnabled
+                        ?: DEFAULT_PERSISTENT_FLOATING_ENABLED,
             ),
         )
         hideFloating()
@@ -219,6 +236,9 @@ class IMEService :
                     settings?.showOnScreenKeyboard
                         ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
                 floatingModeEnabled = 1,
+                persistentFloatingEnabled =
+                    settings?.persistentFloatingEnabled
+                        ?: DEFAULT_PERSISTENT_FLOATING_ENABLED,
             ),
         )
         val dummyView =
@@ -233,6 +253,30 @@ class IMEService :
         setInputView(dummyView)
         window?.window?.decorView?.requestApplyInsets()
         showFloating()
+    }
+
+    internal fun togglePersistentMode() {
+        val app = application as ThumbkeyApplication
+        val settings = app.appSettingsRepository.appSettings.value
+        val currentlyEnabled =
+            (
+                settings?.persistentFloatingEnabled
+                    ?: DEFAULT_PERSISTENT_FLOATING_ENABLED
+            ).toBool()
+
+        val newEnabled = if (currentlyEnabled) 0 else 1
+        app.appSettingsRepository.updateOtherSettings(
+            OtherSettingsUpdate(
+                id = 1,
+                showOnScreenKeyboard =
+                    settings?.showOnScreenKeyboard
+                        ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
+                floatingModeEnabled =
+                    settings?.floatingModeEnabled
+                        ?: DEFAULT_FLOATING_MODE_ENABLED,
+                persistentFloatingEnabled = newEnabled,
+            ),
+        )
     }
 
     internal fun toggleFloatingMode() {
@@ -252,6 +296,9 @@ class IMEService :
                     settings?.showOnScreenKeyboard
                         ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
                 floatingModeEnabled = newEnabled,
+                persistentFloatingEnabled =
+                    settings?.persistentFloatingEnabled
+                        ?: DEFAULT_PERSISTENT_FLOATING_ENABLED,
             ),
         )
 
@@ -375,7 +422,7 @@ class IMEService :
     }
 
     override fun onWindowHidden() {
-        if (isFloatingModeEnabled()) {
+        if (isFloatingModeEnabled() && !isPersistentFloatingEnabled()) {
             hideFloating()
         }
         currentKeyboardDefinition?.settings?.textProcessor?.handleFinishInput(this)
@@ -421,12 +468,12 @@ class IMEService :
         val settings = settingsRepo.appSettings.getValue()
         val showOnScreenKeyboard =
             (settings?.showOnScreenKeyboard ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD).toBool()
+        val persistentEnabled =
+            (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()
 
-        // Always call super implementation because Android docs says:
-        // "If you override this method you must call through to the superclass implementation."
-        // https://developer.android.com/reference/android/inputmethodservice/InputMethodService#onEvaluateInputViewShown()
         return super.onEvaluateInputViewShown() ||
-            showOnScreenKeyboard
+            showOnScreenKeyboard ||
+            persistentEnabled
     }
 
     // Disable the fullscreen text editor if set by the user

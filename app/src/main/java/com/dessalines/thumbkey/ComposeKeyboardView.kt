@@ -7,12 +7,15 @@ import android.widget.Toast
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DragHandle
+import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -34,6 +37,7 @@ import androidx.lifecycle.lifecycleScope
 import com.dessalines.thumbkey.db.AppSettingsRepository
 import com.dessalines.thumbkey.db.ClipboardRepository
 import com.dessalines.thumbkey.db.DEFAULT_FLOATING_MODE_ENABLED
+import com.dessalines.thumbkey.db.DEFAULT_PERSISTENT_FLOATING_ENABLED
 import com.dessalines.thumbkey.ui.components.keyboard.KeyboardScreen
 import com.dessalines.thumbkey.ui.theme.ThumbkeyTheme
 import com.dessalines.thumbkey.utils.KeyboardMode
@@ -58,6 +62,7 @@ class ComposeKeyboardView(
         val ctx = context as IMEService
 
         val isFloating = !forceDocked && (settings?.floatingModeEnabled ?: DEFAULT_FLOATING_MODE_ENABLED).toBool()
+        val isPersistent = isFloating && (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()
         val isExpandInFloating = ctx.isExpandInFloatingEnabled()
 
         val keyboardContent = @Composable {
@@ -176,7 +181,7 @@ class ComposeKeyboardView(
                                                             onDragStart = { velocityTracker.resetTracking() },
                                                             onDragEnd = {
                                                                 val velocity = velocityTracker.calculateVelocity()
-                                                                if (velocity.y > 1000f) {
+                                                                if (velocity.y > 2500f) {
                                                                     ctx.onFlingDismiss()
                                                                 } else {
                                                                     ctx.onDragEnd()
@@ -201,6 +206,15 @@ class ComposeKeyboardView(
                                                 modifier = Modifier.height(12.dp),
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
+                                            if (isPersistent) {
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Icon(
+                                                    imageVector = Icons.Outlined.PushPin,
+                                                    contentDescription = "Persistent mode active",
+                                                    modifier = Modifier.size(10.dp),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                            }
                                         }
                                         keyboardContent()
                                     }

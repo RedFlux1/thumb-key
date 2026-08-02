@@ -65,6 +65,7 @@ import com.dessalines.thumbkey.db.DEFAULT_KEY_RADIUS
 import com.dessalines.thumbkey.db.DEFAULT_KEY_WIDTH
 import com.dessalines.thumbkey.db.DEFAULT_MIN_SWIPE_LENGTH
 import com.dessalines.thumbkey.db.DEFAULT_NON_SQUARE_KEYS
+import com.dessalines.thumbkey.db.DEFAULT_PERSISTENT_FLOATING_ENABLED
 import com.dessalines.thumbkey.db.DEFAULT_POSITION
 import com.dessalines.thumbkey.db.DEFAULT_POSITION_PADDING
 import com.dessalines.thumbkey.db.DEFAULT_PUSHUP_SIZE
@@ -316,6 +317,7 @@ private fun resetAppSettingsToDefault(appSettingsViewModel: AppSettingsViewModel
             showOnScreenKeyboard = DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
             slideHoldEnabled = DEFAULT_SLIDE_HOLD_ENABLED,
             floatingModeEnabled = DEFAULT_FLOATING_MODE_ENABLED,
+            persistentFloatingEnabled = DEFAULT_PERSISTENT_FLOATING_ENABLED,
         ),
     )
 }

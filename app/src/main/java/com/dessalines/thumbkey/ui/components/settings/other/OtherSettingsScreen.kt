@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material.icons.outlined.Opacity
 import androidx.compose.material.icons.outlined.OpenInFull
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +45,7 @@ import com.dessalines.thumbkey.R
 import com.dessalines.thumbkey.ThumbkeyApplication
 import com.dessalines.thumbkey.db.AppSettingsViewModel
 import com.dessalines.thumbkey.db.DEFAULT_FLOATING_MODE_ENABLED
+import com.dessalines.thumbkey.db.DEFAULT_PERSISTENT_FLOATING_ENABLED
 import com.dessalines.thumbkey.db.DEFAULT_SHOW_ON_SCREEN_KEYBOARD
 import com.dessalines.thumbkey.db.OtherSettingsUpdate
 import com.dessalines.thumbkey.utils.SimpleTopAppBar
@@ -69,6 +71,8 @@ fun OtherSettingsScreen(
         (settings?.showOnScreenKeyboard ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD).toBool()
     var floatingModeEnabledState =
         (settings?.floatingModeEnabled ?: DEFAULT_FLOATING_MODE_ENABLED).toBool()
+    var persistentFloatingEnabledState =
+        (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()
 
     val context = LocalContext.current
     val app = context.applicationContext as ThumbkeyApplication
@@ -84,6 +88,7 @@ fun OtherSettingsScreen(
                 id = 1,
                 showOnScreenKeyboard = showOnScreenKeyboardState.toInt(),
                 floatingModeEnabled = floatingModeEnabledState.toInt(),
+                persistentFloatingEnabled = persistentFloatingEnabledState.toInt(),
             ),
         )
     }
@@ -145,6 +150,25 @@ fun OtherSettingsScreen(
                         },
                     )
                     if (floatingModeEnabledState) {
+                        SwitchPreference(
+                            value = persistentFloatingEnabledState,
+                            onValueChange = {
+                                persistentFloatingEnabledState = it
+                                updateOtherSettings()
+                            },
+                            title = {
+                                Text(stringResource(R.string.persistent_floating_mode))
+                            },
+                            summary = {
+                                Text(stringResource(R.string.persistent_floating_mode_description))
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.TouchApp,
+                                    contentDescription = null,
+                                )
+                            },
+                        )
                         Row(
                             modifier =
                                 Modifier

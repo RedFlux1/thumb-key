@@ -5,12 +5,12 @@ session:
   active_epic: e02
   active_story: null
   workflow_mode: solo-git
-  last_skill: plan-work
+  last_skill: develop-tdd
 
 handoff:
-  next_skill: kickoff-branch
-  branch: null
-  worktree: null
+  next_skill: verify-work
+  branch: feat/persistent-floating
+  worktree: /home/peder/Documents/thumbType/feat-persistent-floating
   epic_dir: specs/epics/e02-persistent-floating
 
 completed:
