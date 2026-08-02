@@ -1334,6 +1334,11 @@ fun performKeyAction(
             onToggleMetaMode(enable)
         }
 
+        is KeyAction.ToggleFloatingMode -> {
+            Log.d(TAG, "Toggling floating mode")
+            Handler(ime.mainLooper).post { ime.toggleFloatingMode() }
+        }
+
         is KeyAction.ToggleNumericMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Numeric: $enable")
@@ -1343,15 +1348,43 @@ fun performKeyAction(
         is KeyAction.ToggleEmojiMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Emoji: $enable")
-            keyboardSettings.textProcessor?.handleFinishInput(ime)
-            onToggleEmojiMode(enable)
+            if (enable && ime.isFloatingModeEnabled()) {
+                keyboardSettings.textProcessor?.handleFinishInput(ime)
+                if (ime.isExpandInFloatingEnabled()) {
+                    onToggleEmojiMode(enable)
+                } else {
+                    ime.shouldRevertToFloating = true
+                    ime.pendingDockedMode = KeyboardMode.EMOJI
+                    Handler(ime.mainLooper).post { ime.disableFloatingForDocking() }
+                }
+            } else if (!enable && ime.shouldRevertToFloating) {
+                ime.shouldRevertToFloating = false
+                Handler(ime.mainLooper).post { ime.enableFloatingAfterDocking() }
+            } else {
+                keyboardSettings.textProcessor?.handleFinishInput(ime)
+                onToggleEmojiMode(enable)
+            }
         }
 
         is KeyAction.ToggleClipboardMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Clipboard: $enable")
-            keyboardSettings.textProcessor?.handleFinishInput(ime)
-            onToggleClipboardMode(enable)
+            if (enable && ime.isFloatingModeEnabled()) {
+                keyboardSettings.textProcessor?.handleFinishInput(ime)
+                if (ime.isExpandInFloatingEnabled()) {
+                    onToggleClipboardMode(enable)
+                } else {
+                    ime.shouldRevertToFloating = true
+                    ime.pendingDockedMode = KeyboardMode.CLIPBOARD
+                    Handler(ime.mainLooper).post { ime.disableFloatingForDocking() }
+                }
+            } else if (!enable && ime.shouldRevertToFloating) {
+                ime.shouldRevertToFloating = false
+                Handler(ime.mainLooper).post { ime.enableFloatingAfterDocking() }
+            } else {
+                keyboardSettings.textProcessor?.handleFinishInput(ime)
+                onToggleClipboardMode(enable)
+            }
         }
 
         KeyAction.GotoSettings -> {

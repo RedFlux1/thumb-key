@@ -208,6 +208,8 @@ sealed class KeyAction {
         val enable: Boolean,
     ) : KeyAction()
 
+    class ToggleFloatingMode : KeyAction()
+
     class ShiftAndCapsLock(
         val enable: Boolean,
     ) : KeyAction()

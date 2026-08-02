@@ -3,8 +3,8 @@
 
 epics:
   e01:
-    status: planned
+    status: done
     stories:
-      e01s01: planned
-      e01s02: planned
-      e01s03: planned
+      e01s01: passing
+      e01s02: passing
+      e01s03: passing

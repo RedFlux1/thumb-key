@@ -247,6 +247,13 @@ val TOGGLE_META_FALSE_KEYC =
         color = MUTED,
     )
 
+val TOGGLE_FLOATING_MODE_KEYC =
+    KeyC(
+        display = KeyDisplay.IconDisplay(Icons.Outlined.OpenInFull),
+        action = ToggleFloatingMode(),
+        color = MUTED,
+    )
+
 // Escape key for Vim/terminal use
 val ESCAPE_KEYC =
     KeyC(

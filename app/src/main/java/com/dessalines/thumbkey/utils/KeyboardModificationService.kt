@@ -38,6 +38,7 @@ import com.dessalines.thumbkey.keyboards.TOGGLE_CLIPBOARD_MODE_TRUE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_CTRL_FALSE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_CTRL_TRUE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_EMOJI_MODE_TRUE_KEYC
+import com.dessalines.thumbkey.keyboards.TOGGLE_FLOATING_MODE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_META_FALSE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_META_TRUE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_NUMERIC_MODE_FALSE_KEYC
@@ -294,6 +295,7 @@ fun getCommonKeyCFromKeyAction(keyActionSerializable: KeyActionSerializable?): K
         KeyActionSerializable.ToggleAltModeFalse -> TOGGLE_ALT_FALSE_KEYC
         KeyActionSerializable.ToggleMetaModeTrue -> TOGGLE_META_TRUE_KEYC
         KeyActionSerializable.ToggleMetaModeFalse -> TOGGLE_META_FALSE_KEYC
+        KeyActionSerializable.ToggleFloatingMode -> TOGGLE_FLOATING_MODE_KEYC
         KeyActionSerializable.Left -> SPACEBAR_LEFT_KEYC
         KeyActionSerializable.Right -> SPACEBAR_RIGHT_KEYC
         KeyActionSerializable.Top -> SPACEBAR_PROGRAMMING_TOP_KEYC
@@ -496,6 +498,7 @@ enum class KeyActionSerializable {
     ToggleAltModeFalse,
     ToggleMetaModeTrue,
     ToggleMetaModeFalse,
+    ToggleFloatingMode,
     Left,
     Right,
     Top,

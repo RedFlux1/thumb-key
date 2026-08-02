@@ -2,7 +2,7 @@
 
 story_id: e01s03
 title: "YAML keybinding and opacity setting"
-status: failing
+status: passing
 bcps: 3
 
 tasks:
@@ -13,7 +13,7 @@ tasks:
       a key press. Place alongside ToggleCtrlMode/ToggleAltMode.
     verify: ./gradlew assembleDebug
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories:
@@ -28,7 +28,7 @@ tasks:
       (Kotlin sealed class exhaustiveness enforced).
     verify: ./gradlew assembleDebug
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories:
@@ -43,7 +43,7 @@ tasks:
       No extra arguments needed. Add test case if YAML test harness exists.
     verify: ./gradlew assembleDebug
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories:
@@ -57,7 +57,7 @@ tasks:
       Place alongside TOGGLE_CTRL_TRUE_KEYC and similar toggle keys.
     verify: ./gradlew assembleDebug
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories:
@@ -72,7 +72,7 @@ tasks:
       Show current value as percentage label.
     verify: ./gradlew assembleDebug
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories:
@@ -87,7 +87,7 @@ tasks:
       before windowManager.addView().
     verify: ./gradlew assembleDebug
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories:
@@ -99,7 +99,7 @@ tasks:
       Run full preflight: lint + assemble. Gate must be green.
     verify: ./gradlew lintKotlin lint assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:

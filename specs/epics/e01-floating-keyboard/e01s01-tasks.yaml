@@ -3,7 +3,7 @@
 
 story_id: e01s01
 title: "Overlay window with focus-synced lifecycle"
-status: failing
+status: passing
 bcps: 5
 
 tasks:
@@ -13,7 +13,7 @@ tasks:
       with DAO (getConfig, upsert) and database migration. Register in AppDb.
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -26,7 +26,7 @@ tasks:
       Flow<FloatingModeConfig?> for reactive reads and a suspend upsert.
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -41,7 +41,7 @@ tasks:
       on API < 26.
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -56,7 +56,7 @@ tasks:
       Manage floatingView reference and windowManager lifecycle.
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -71,7 +71,7 @@ tasks:
       from Room in isFloatingModeEnabled().
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -86,7 +86,7 @@ tasks:
       No drag handle in this slice.
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -101,7 +101,7 @@ tasks:
       when floating. onWindowHidden/onFinishInputView: cleanup flags.
     verify: ./gradlew assembleDebug
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories:
@@ -113,7 +113,7 @@ tasks:
       Run full preflight: lint + assemble. Gate must be green.
     verify: ./gradlew lintKotlin lint assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:

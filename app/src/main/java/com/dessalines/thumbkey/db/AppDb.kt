@@ -3,6 +3,7 @@ package com.dessalines.thumbkey.db
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase.CONFLICT_IGNORE
+import android.provider.Settings
 import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
@@ -76,6 +77,7 @@ const val MIN_CLIPBOARD_MAX_SIZE = 2
 const val MAX_CLIPBOARD_MAX_SIZE = 100
 const val DEFAULT_USE_PRIVATE_CLIPBOARD = 0
 const val DEFAULT_SHOW_ON_SCREEN_KEYBOARD = 0
+const val DEFAULT_FLOATING_MODE_ENABLED = 0
 
 @Entity
 data class AppSettings(
@@ -343,6 +345,11 @@ data class AppSettings(
         defaultValue = DEFAULT_SHOW_ON_SCREEN_KEYBOARD.toString(),
     )
     val showOnScreenKeyboard: Int,
+    @ColumnInfo(
+        name = "floating_mode_enabled",
+        defaultValue = DEFAULT_FLOATING_MODE_ENABLED.toString(),
+    )
+    val floatingModeEnabled: Int,
 )
 
 data class LayoutsUpdate(
@@ -515,7 +522,68 @@ data class OtherSettingsUpdate(
     val id: Int,
     @ColumnInfo(name = "show_on_screen_keyboard")
     val showOnScreenKeyboard: Int,
+    @ColumnInfo(name = "floating_mode_enabled")
+    val floatingModeEnabled: Int,
 )
+
+class FloatingModeRepository(
+    private val dao: FloatingModeConfigDao,
+) {
+    fun getConfigSync(): FloatingModeConfig? = dao.getConfig(1)
+
+    fun savePosition(
+        orientation: Int,
+        x: Int,
+        y: Int,
+    ) {
+        val existing = dao.getConfig(orientation)
+        val config =
+            FloatingModeConfig(
+                orientation = orientation,
+                x = x,
+                y = y,
+                opacity = existing?.opacity ?: 100,
+                expandInFloating = existing?.expandInFloating ?: 0,
+                maxWidthFraction = existing?.maxWidthFraction ?: 60,
+            )
+        dao.upsert(config)
+    }
+
+    fun loadPosition(orientation: Int): Pair<Int, Int>? {
+        val config = dao.getConfig(orientation)
+        return config?.let { it.x to it.y }
+    }
+
+    fun getOpacity(): Int {
+        val config = dao.getConfig(1)
+        return config?.opacity ?: 100
+    }
+
+    fun saveOpacity(opacity: Int) {
+        val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
+        dao.upsert(config.copy(opacity = opacity))
+    }
+
+    fun isExpandInFloating(): Boolean {
+        val config = dao.getConfig(1)
+        return config?.expandInFloating == 1
+    }
+
+    fun setExpandInFloating(expand: Boolean) {
+        val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
+        dao.upsert(config.copy(expandInFloating = if (expand) 1 else 0))
+    }
+
+    fun getMaxWidthFraction(): Int {
+        val config = dao.getConfig(1)
+        return config?.maxWidthFraction ?: 60
+    }
+
+    fun setMaxWidthFraction(fraction: Int) {
+        val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
+        dao.upsert(config.copy(maxWidthFraction = fraction))
+    }
+}
 
 @Dao
 interface AppSettingsDao {
@@ -620,12 +688,14 @@ class AppSettingsRepository(
 }
 
 @Database(
-    version = 27,
-    entities = [AppSettings::class],
+    version = 32,
+    entities = [AppSettings::class, FloatingModeConfig::class],
     exportSchema = true,
 )
 abstract class AppDB : RoomDatabase() {
     abstract fun appSettingsDao(): AppSettingsDao
+
+    abstract fun floatingModeConfigDao(): FloatingModeConfigDao
 
     companion object {
         @Volatile
@@ -643,6 +713,11 @@ abstract class AppDB : RoomDatabase() {
                             "thumbkey",
                         ).allowMainThreadQueries()
                         .addMigrations(
+                            MIGRATION_31_32,
+                            MIGRATION_30_31,
+                            MIGRATION_29_30,
+                            MIGRATION_28_29,
+                            MIGRATION_27_28,
                             MIGRATION_1_2,
                             MIGRATION_2_3,
                             MIGRATION_3_4,
@@ -685,6 +760,10 @@ abstract class AppDB : RoomDatabase() {
                                                 put(
                                                     "show_on_screen_keyboard",
                                                     if (BuildConfig.DEBUG) 1 else DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
+                                                )
+                                                put(
+                                                    "floating_mode_enabled",
+                                                    DEFAULT_FLOATING_MODE_ENABLED,
                                                 )
                                             },
                                         )

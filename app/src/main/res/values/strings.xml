@@ -146,4 +146,8 @@
     <string name="other">Other</string>
     <string name="show_on_screen_keyboard">Show on-screen keyboard</string>
     <string name="show_on_screen_keyboard_description">Show on-screen keyboard while using physical keyboard</string>
+    <string name="floating_mode">Floating mode</string>
+    <string name="floating_mode_description">Show keyboard as a floating overlay instead of docked at the bottom. Requires "Draw over other apps" permission.</string>
+    <string name="floating_expand_in_floating">Emoji/clipboard in floating</string>
+    <string name="floating_expand_in_floating_description">Keep emoji and clipboard views inside the floating window instead of temporarily docking</string>
 </resources>

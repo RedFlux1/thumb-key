@@ -2,6 +2,7 @@ package com.dessalines.thumbkey.ui.components.keyboard
 
 import android.content.Context
 import android.media.AudioManager
+import android.os.Handler
 import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
@@ -107,6 +108,9 @@ fun KeyboardScreen(
     onChangePosition: ((old: KeyboardPosition) -> KeyboardPosition) -> Unit,
     onToggleHideLetters: () -> Unit,
     onGoToClipboardSettings: () -> Unit,
+    isFloating: Boolean = false,
+    isExpandInFloating: Boolean = false,
+    initialKeyboardMode: KeyboardMode? = null,
 ) {
     val ctx = LocalContext.current as IMEService
 
@@ -127,7 +131,7 @@ fun KeyboardScreen(
 
     var mode by remember {
         val startMode =
-            getKeyboardMode(
+            initialKeyboardMode ?: getKeyboardMode(
                 ime = ctx,
                 autoCapitalize = settings?.autoCapitalize?.toBool() == true && keyboardDefinition.settings.autoShift,
             )
@@ -794,7 +798,12 @@ fun KeyboardScreen(
                         }
                     },
                     onBack = {
-                        mode = KeyboardMode.MAIN
+                        if (ctx.shouldRevertToFloating) {
+                            ctx.shouldRevertToFloating = false
+                            Handler(ctx.mainLooper).post { ctx.enableFloatingAfterDocking() }
+                        } else {
+                            mode = KeyboardMode.MAIN
+                        }
                     },
                     onClearAll = {
                         scope.launch {

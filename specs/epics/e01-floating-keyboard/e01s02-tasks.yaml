@@ -2,7 +2,7 @@
 
 story_id: e01s02
 title: "Drag-to-reposition and position persistence"
-status: failing
+status: passing
 bcps: 5
 
 tasks:
@@ -14,7 +14,7 @@ tasks:
       isFloating is true (reads from FloatingModeConfig).
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -29,7 +29,7 @@ tasks:
       apply position update via windowManager.updateViewLayout().
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -44,7 +44,7 @@ tasks:
       If velocity <= threshold, treat as normal drag end (reposition only).
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -60,7 +60,7 @@ tasks:
       keyed by orientation so landscape and portrait are independent.
     verify: ./gradlew assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:
@@ -76,7 +76,7 @@ tasks:
       Position is orientation-aware — rotation loads the correct position.
     verify: ./gradlew assembleDebug
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories:
@@ -88,7 +88,7 @@ tasks:
       Run full preflight: lint + assemble. Gate must be green.
     verify: ./gradlew lintKotlin lint assembleDebug
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories:

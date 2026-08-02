@@ -23,6 +23,7 @@ import com.dessalines.thumbkey.db.AppSettingsViewModel
 import com.dessalines.thumbkey.db.AppSettingsViewModelFactory
 import com.dessalines.thumbkey.db.ClipboardDB
 import com.dessalines.thumbkey.db.ClipboardRepository
+import com.dessalines.thumbkey.db.FloatingModeRepository
 import com.dessalines.thumbkey.ui.components.common.ShowChangelog
 import com.dessalines.thumbkey.ui.components.settings.SettingsScreen
 import com.dessalines.thumbkey.ui.components.settings.about.AboutScreen
@@ -44,6 +45,7 @@ class ThumbkeyApplication : Application() {
     private val database by lazy { AppDB.getDatabase(this) }
     private val clipboardDatabase by lazy { ClipboardDB.getDatabase(this) }
     val appSettingsRepository by lazy { AppSettingsRepository(database.appSettingsDao()) }
+    val floatingModeRepository by lazy { FloatingModeRepository(database.floatingModeConfigDao()) }
     val clipboardRepository by lazy {
         ClipboardRepository(
             clipboardDatabase.clipboardItemDao(),

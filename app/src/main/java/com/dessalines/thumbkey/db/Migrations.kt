@@ -302,3 +302,54 @@ val MIGRATION_26_27 =
             )
         }
     }
+
+val MIGRATION_27_28 =
+    object : Migration(27, 28) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE AppSettings ADD COLUMN floating_mode_enabled INTEGER NOT NULL DEFAULT $DEFAULT_FLOATING_MODE_ENABLED",
+            )
+        }
+    }
+
+val MIGRATION_28_29 =
+    object : Migration(28, 29) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS FloatingModeConfig (
+                    orientation INTEGER NOT NULL PRIMARY KEY,
+                    x INTEGER NOT NULL DEFAULT 100,
+                    y INTEGER NOT NULL DEFAULT 200
+                )
+                """.trimIndent(),
+            )
+        }
+    }
+
+val MIGRATION_29_30 =
+    object : Migration(29, 30) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE FloatingModeConfig ADD COLUMN opacity INTEGER NOT NULL DEFAULT 100",
+            )
+        }
+    }
+
+val MIGRATION_30_31 =
+    object : Migration(30, 31) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE FloatingModeConfig ADD COLUMN expand_in_floating INTEGER NOT NULL DEFAULT 0",
+            )
+        }
+    }
+
+val MIGRATION_31_32 =
+    object : Migration(31, 32) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE FloatingModeConfig ADD COLUMN max_width_fraction INTEGER NOT NULL DEFAULT 60",
+            )
+        }
+    }
