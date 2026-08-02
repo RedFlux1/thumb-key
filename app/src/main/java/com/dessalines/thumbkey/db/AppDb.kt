@@ -17,8 +17,6 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Update
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.dessalines.thumbkey.BuildConfig
@@ -78,11 +76,6 @@ const val MIN_CLIPBOARD_MAX_SIZE = 2
 const val MAX_CLIPBOARD_MAX_SIZE = 100
 const val DEFAULT_USE_PRIVATE_CLIPBOARD = 0
 const val DEFAULT_SHOW_ON_SCREEN_KEYBOARD = 0
-
-const val DEFAULT_FLOATING_ENABLED = 0
-const val DEFAULT_FLOATING_OPACITY = 100
-const val DEFAULT_FLOATING_EXPAND_IN_FLOATING = 0
-const val DEFAULT_FLOATING_MAX_WIDTH_FRACTION = 60
 
 @Entity
 data class AppSettings(
@@ -627,13 +620,12 @@ class AppSettingsRepository(
 }
 
 @Database(
-    version = 30,
-    entities = [AppSettings::class, FloatingModeConfig::class],
+    version = 27,
+    entities = [AppSettings::class],
     exportSchema = true,
 )
 abstract class AppDB : RoomDatabase() {
     abstract fun appSettingsDao(): AppSettingsDao
-    abstract fun floatingModeConfigDao(): FloatingModeConfigDao
 
     companion object {
         @Volatile
@@ -677,9 +669,6 @@ abstract class AppDB : RoomDatabase() {
                             MIGRATION_24_25,
                             MIGRATION_25_26,
                             MIGRATION_26_27,
-                            MIGRATION_27_28,
-                            MIGRATION_28_29,
-                            MIGRATION_29_30,
                         )
                         // Necessary because it can't insert data on creation
                         .addCallback(
@@ -697,21 +686,6 @@ abstract class AppDB : RoomDatabase() {
                                                     "show_on_screen_keyboard",
                                                     if (BuildConfig.DEBUG) 1 else DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
                                                 )
-                                            },
-                                        )
-                                        db.insert(
-                                            "FloatingModeConfig",
-                                            CONFLICT_IGNORE,
-                                            ContentValues(9).apply {
-                                                put("id", 1)
-                                                put("x", 0)
-                                                put("y", 0)
-                                                put("width", 0)
-                                                put("height", 0)
-                                                put("enabled", DEFAULT_FLOATING_ENABLED)
-                                                put("opacity", DEFAULT_FLOATING_OPACITY)
-                                                put("expand_in_floating", DEFAULT_FLOATING_EXPAND_IN_FLOATING)
-                                                put("max_width_fraction", DEFAULT_FLOATING_MAX_WIDTH_FRACTION)
                                             },
                                         )
                                     }
@@ -785,81 +759,6 @@ class AppSettingsViewModelFactory(
         if (modelClass.isAssignableFrom(AppSettingsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return AppSettingsViewModel(repository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
-
-@Entity(tableName = "FloatingModeConfig")
-data class FloatingModeConfig(
-    @PrimaryKey val id: Int = 1,
-    @ColumnInfo(name = "x") val x: Int = 0,
-    @ColumnInfo(name = "y") val y: Int = 0,
-    @ColumnInfo(name = "width") val width: Int = 0,
-    @ColumnInfo(name = "height") val height: Int = 0,
-    @ColumnInfo(name = "enabled") val enabled: Int = 0,
-    @ColumnInfo(name = "opacity") val opacity: Int = 100,
-    @ColumnInfo(name = "expand_in_floating") val expandInFloating: Int = DEFAULT_FLOATING_EXPAND_IN_FLOATING,
-    @ColumnInfo(name = "max_width_fraction") val maxWidthFraction: Int = DEFAULT_FLOATING_MAX_WIDTH_FRACTION,
-)
-
-@Dao
-interface FloatingModeConfigDao {
-    @Query("SELECT * FROM FloatingModeConfig LIMIT 1")
-    fun getConfig(): LiveData<FloatingModeConfig>
-
-    @Query("SELECT * FROM FloatingModeConfig LIMIT 1")
-    fun getConfigSync(): FloatingModeConfig?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsert(config: FloatingModeConfig)
-
-    @Update
-    suspend fun update(config: FloatingModeConfig)
-}
-
-class FloatingModeRepository(
-    private val dao: FloatingModeConfigDao,
-) {
-    val config = dao.getConfig()
-
-    @WorkerThread
-    suspend fun update(config: FloatingModeConfig) {
-        dao.update(config)
-    }
-
-    @WorkerThread
-    suspend fun upsert(config: FloatingModeConfig) {
-        dao.upsert(config)
-    }
-
-    @WorkerThread
-    fun getConfigSync(): FloatingModeConfig? = dao.getConfigSync()
-}
-
-class FloatingModeViewModel(
-    private val repository: FloatingModeRepository,
-) : ViewModel() {
-    val config = repository.config
-
-    fun update(config: FloatingModeConfig) =
-        viewModelScope.launch {
-            repository.update(config)
-        }
-
-    fun upsert(config: FloatingModeConfig) =
-        viewModelScope.launch {
-            repository.upsert(config)
-        }
-}
-
-class FloatingModeViewModelFactory(
-    private val repository: FloatingModeRepository,
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(FloatingModeViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return FloatingModeViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -86,12 +86,6 @@ val HIDE_KEYBOARD_KEYC =
         action = HideKeyboard,
         color = MUTED,
     )
-val TOGGLE_FLOATING_MODE_KEYC =
-    KeyC(
-        display = KeyDisplay.IconDisplay(Icons.Outlined.PictureInPicture),
-        action = ToggleFloatingMode,
-        color = MUTED,
-    )
 
 fun textEditKeyItem(center: KeyC): KeyItemC =
     KeyItemC(

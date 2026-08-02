@@ -1249,49 +1249,15 @@ fun performKeyAction(
         is KeyAction.ToggleEmojiMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Emoji: $enable")
-            if (enable && ime.isFloatingModeEnabled()) {
-                if (ime.isExpandInFloatingEnabled()) {
-                    // Keep floating, just switch mode within the floating window
-                    keyboardSettings.textProcessor?.handleFinishInput(ime)
-                    onToggleEmojiMode(enable)
-                } else {
-                    // Dock temporarily (default behavior)
-                    keyboardSettings.textProcessor?.handleFinishInput(ime)
-                    ime.shouldRevertToFloating = true
-                    ime.pendingDockedMode = KeyboardMode.EMOJI
-                    Handler(ime.mainLooper).post { ime.anchorToBottom() }
-                }
-            } else if (!enable && ime.shouldRevertToFloating) {
-                ime.shouldRevertToFloating = false
-                Handler(ime.mainLooper).post { ime.toggleFloatingMode() }
-            } else {
-                keyboardSettings.textProcessor?.handleFinishInput(ime)
-                onToggleEmojiMode(enable)
-            }
+            keyboardSettings.textProcessor?.handleFinishInput(ime)
+            onToggleEmojiMode(enable)
         }
 
         is KeyAction.ToggleClipboardMode -> {
             val enable = action.enable
             Log.d(TAG, "Toggling Clipboard: $enable")
-            if (enable && ime.isFloatingModeEnabled()) {
-                if (ime.isExpandInFloatingEnabled()) {
-                    // Keep floating, just switch mode within the floating window
-                    keyboardSettings.textProcessor?.handleFinishInput(ime)
-                    onToggleClipboardMode(enable)
-                } else {
-                    // Dock temporarily (default behavior)
-                    keyboardSettings.textProcessor?.handleFinishInput(ime)
-                    ime.shouldRevertToFloating = true
-                    ime.pendingDockedMode = KeyboardMode.CLIPBOARD
-                    Handler(ime.mainLooper).post { ime.anchorToBottom() }
-                }
-            } else if (!enable && ime.shouldRevertToFloating) {
-                ime.shouldRevertToFloating = false
-                Handler(ime.mainLooper).post { ime.toggleFloatingMode() }
-            } else {
-                keyboardSettings.textProcessor?.handleFinishInput(ime)
-                onToggleClipboardMode(enable)
-            }
+            keyboardSettings.textProcessor?.handleFinishInput(ime)
+            onToggleClipboardMode(enable)
         }
 
         KeyAction.GotoSettings -> {
@@ -1526,10 +1492,6 @@ fun performKeyAction(
             ime.requestHideSelf(0)
         }
 
-        KeyAction.ToggleFloatingMode -> {
-            ime.toggleFloatingMode()
-        }
-
         KeyAction.Noop -> {}
 
         is KeyAction.ToggleCurrentWordCapitalization -> {
@@ -1624,9 +1586,8 @@ fun getAutoKeyWidth(
     keyPadding: Int,
     position: KeyboardPosition,
     ctx: Context,
-    availableWidthDp: Int? = null,
 ): Int {
-    val screenWidth = availableWidthDp ?: getCurrentDisplayWidth(ctx)
+    val screenWidth = getCurrentDisplayWidth(ctx)
     val availableWidth = screenWidth - (keyPadding * 2)
     val multiplier =
         when (position) {

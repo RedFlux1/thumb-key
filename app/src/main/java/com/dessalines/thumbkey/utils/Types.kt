@@ -300,8 +300,6 @@ sealed class KeyAction {
 
     data object HideKeyboard : KeyAction()
 
-    data object ToggleFloatingMode : KeyAction()
-
     data object Noop : KeyAction()
 }
 

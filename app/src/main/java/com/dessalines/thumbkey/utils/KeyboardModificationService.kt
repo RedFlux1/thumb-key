@@ -31,7 +31,6 @@ import com.dessalines.thumbkey.keyboards.SPACEBAR_RIGHT_KEYC
 import com.dessalines.thumbkey.keyboards.SWITCH_IME_KEYC
 import com.dessalines.thumbkey.keyboards.SWITCH_IME_VOICE_KEYC
 import com.dessalines.thumbkey.keyboards.SWITCH_LANGUAGE_KEYC
-import com.dessalines.thumbkey.keyboards.TOGGLE_FLOATING_MODE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_ALT_FALSE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_ALT_TRUE_KEYC
 import com.dessalines.thumbkey.keyboards.TOGGLE_CAPS_KEYC
@@ -313,7 +312,6 @@ fun getCommonKeyCFromKeyAction(keyActionSerializable: KeyActionSerializable?): K
         KeyActionSerializable.SwitchIME -> SWITCH_IME_KEYC
         KeyActionSerializable.SwitchIMEVoice -> SWITCH_IME_VOICE_KEYC
         KeyActionSerializable.HideKeyboard -> HIDE_KEYBOARD_KEYC
-        KeyActionSerializable.ToggleFloatingMode -> TOGGLE_FLOATING_MODE_KEYC
         KeyActionSerializable.Noop -> NOOP_KEYC
         null -> null
     }
@@ -507,7 +505,6 @@ enum class KeyActionSerializable {
     SwitchIME,
     SwitchIMEVoice,
     HideKeyboard,
-    ToggleFloatingMode,
     IMEComplete,
     PreviousWordBeforeCursor,
     NextWordAfterCursor,
