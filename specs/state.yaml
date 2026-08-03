@@ -5,10 +5,10 @@ session:
   active_epic: null
   active_story: null
   workflow_mode: solo-git
-  last_skill: null
+  last_skill: release-branch
 
 handoff:
-  next_skill: null
+  next_skill: survey-context
   branch: main
   worktree: null
   epic_dir: null
@@ -21,5 +21,5 @@ completed:
   e01: floating-keyboard (committed as 88f6e93)
   e00: modifier-support (committed as 091e1c8..b767ae9, not planned via bigpowers)
 
-recent:
-  cleanup-no-programmer-letters: removed programming symbols from NOThumbKeyDataDriven and NOThumbKeyDataDrivenExpanded letter keys, moved Tab/Shift-Tab to numeric layer (committed as pending)
+completed:
+  cleanup-no-programmer-letters: removed programming symbols from NOThumbKeyDataDriven and NOThumbKeyDataDrivenExpanded letter keys, moved Tab/Shift-Tab to numeric layer (committed as 09247ad)
