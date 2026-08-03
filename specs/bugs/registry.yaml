@@ -1,0 +1,9 @@
+bugs:
+  - bug_id: BUG-2026-stale-modifiers
+    date: 2026-08-03
+    severity: medium
+    priority: high
+    scope: modifier-chord
+    summary: "Swipe-then-swipe modifier chord sends unmodified character, leaves modifier stuck due to stale activeModifiers in pointerInput closure"
+    file: specs/bugs/BUG-2026-stale-modifiers-swipe.md
+    status: resolved
