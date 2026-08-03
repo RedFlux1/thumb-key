@@ -1,138 +1,133 @@
-# specs/product/SCOPE_LATEST.yaml — written by scope-work (2026-08-02)
+# specs/product/SCOPE_LATEST.yaml — written by scope-work (2026-08-03)
 # Step 1 of the planning spine: scope-work → slice-tasks → plan-work
 #
-# Refined for persistent floating keyboard sub-mode.
-# Previous scope (e01 floating keyboard, shipped) archived.
+# Function key support for programmer keyboards.
+# Previous scopes: e02 (persistent floating), e01 (floating keyboard), e00 (modifier support) — all shipped.
 
 core_value: >
-  Let users keep the floating Thumb-Key keyboard always visible so they can
-  use it like a hardware keyboard — sending key events (arrows, modifiers,
-  shortcuts) to websites and apps without needing a text field focused.
+  Let users send function keys (F1–F12) from programmer keyboards by
+  toggling a Fn modifier and pressing number keys — the same way Ctrl,
+  Alt, and Meta modifiers already work.
 
 summary: >
-  The current floating keyboard follows the IME focus lifecycle: it appears
-  when a text field is focused and disappears when focus is lost. This
-  prevents using the keyboard for hardware-style interactions like navigating
-  web pages with arrow keys, hitting Ctrl+R to refresh, or using Tab to move
-  between elements — all of which work fine on a physical keyboard but are
-  impossible with the current IME because the keyboard hides the moment focus
-  leaves a text field.
+  Programmer keyboards (ENThumbKeyProgrammer, ENThumbKeyProgrammerExpanded,
+  ENThumbKeyProgrammerWide, NOThumbKeyDataDriven, NOThumbKeyDataDrivenExpanded,
+  etc.) need function keys for IDE shortcuts, terminal use (e.g., htop, mc),
+  and debugging. Android lacks a dedicated Fn key, and the keyboard has no
+  F-key row due to the 3×3/4×4 grid form factor.
 
-  This scope adds a "persistent" sub-mode of floating mode. When enabled,
-  the floating keyboard stays visible regardless of text field focus. It is
-  only dismissed manually by the user (fling-down on the drag handle). Key
-  events (CommitText for letters/numbers, SendEvent for modifiers/shortcuts,
-  and all other KeyActions) work the same whether or not a text field is
-  focused — the IME sends events to the focused window like a hardware
-  keyboard would.
+  This feature adds a Fn modifier toggle, identical in UX to the existing
+  Ctrl/Alt/Meta toggles:
+  - Single tap activates Fn for the next keypress (one-shot)
+  - Double-tap locks Fn (stays active until tapped again)
+  - While Fn is active, number keys 1–9 send F1–F9, 0 sends F10,
+    minus (-) sends F11, equals (=) sends F12
+  - A "Fn" indicator appears in the modifier status line on the keyboard
+  - Fn is only available on programmer/expanded keyboards (added to their
+    layout definitions as a swipe action)
 
-  The feature is a sub-mode: floating mode must be enabled first, then
-  persistent mode can be toggled. A visual indicator on the floating keyboard
-  shows when persistent mode is active. When persistent is off, the floating
-  keyboard behaves exactly as before (follows focus lifecycle).
+  F-keys are dispatched as KeyEvent(KEYCODE_F1..KEYCODE_F12), the same
+  mechanism used by the existing SendEvent action, through the same
+  performKeyAction path that handles modifier chords.
 
 in_scope:
-  - name: "Persistent mode toggle"
+  - name: "Fn toggle toggle KeyAction"
     description: >
-      A YAML keybinding (existing ToggleFloatingMode action, long-press or
-      separate binding to toggle persistent) and a settings checkbox to
-      enable persistent floating. Only visible/applicable when floating
-      mode is active.
-    maps_to: "e02s01"
+      Add ToggleFnMode(enable: Boolean) to the KeyAction sealed class,
+      following the same pattern as ToggleCtrlMode/ToggleAltMode/ToggleMetaMode.
+    maps_to: "e03s01"
 
-  - name: "IME lifecycle independence"
+  - name: "Fn bitmask state in KeyboardScreen"
     description: >
-      When persistent is enabled, the floating overlay does not hide on
-      onFinishInput() or onWindowHidden(). The IME stays alive via
-      onEvaluateInputViewShown() returning true. Only a manual
-      fling-down or explicit dismiss action hides the keyboard.
-    maps_to: "e02s01"
+      Add FN_MODE_ON flag constant (0x20000), wire into activeModifiers
+      bitmask with same tap/lock pattern (first=activate, second=lock,
+      third=clear). Add onToggleFnMode callback lambda.
+    maps_to: "e03s01"
 
-  - name: "Hardware-keyboard-style input"
+  - name: "Digit-to-F-key mapping in performKeyAction"
     description: >
-      All key actions work without an InputConnection. Letter/number keys
-      send KeyEvents (KEYCODE_A, etc.). Modifier chords (Ctrl+C, Ctrl+V,
-      Alt+Tab) compose properly. Navigation keys (arrows, Tab, Esc, Page
-      Up/Down) dispatch as KeyEvents to the focused window.
-    maps_to: "e02s02"
+      When Fn modifier is active and CommitText contains a single digit
+      (1-9,0) or minus/equals, send the corresponding F-key KeyEvent
+      instead of the character. Map: 1→F1, ..., 9→F9, 0→F10, -→F11, =→F12.
+      Works through the existing SendEvent path (sendDownUpKeyEvents or
+      InputConnection.sendKeyEvent).
+    maps_to: "e03s01"
 
-  - name: "Visual persistent indicator"
+  - name: "Modifier status indicator for Fn"
     description: >
-      A small visual element (lock icon, different drag handle color, or
-      subtle border) on the floating keyboard that indicates persistent
-      mode is active. Helps the user understand why the keyboard isn't
-      auto-hiding.
-    maps_to: "e02s01"
+      Extend the existing modifier status Text in KeyboardScreen to show
+      "Fn" when the Fn bit is active, including the lock emoji (🔒) when
+      locked. Append to the existing buildString block.
+    maps_to: "e03s01"
 
-  - name: "Settings UI"
+  - name: "Shared Fn toggle KeyC in CommonKeys"
     description: >
-      A "Keep keyboard visible" checkbox in the floating mode settings
-      section. Only enabled when floating mode is on. Default: off.
-      Persisted in Room DB as a new boolean field.
-    maps_to: "e02s03"
+      Add TOGGLE_FN_TRUE_KEYC and TOGGLE_FN_FALSE_KEYC to CommonKeys.kt,
+      using Icons.Outlined.KeyboardFunctionKey (or a suitable fallback) as
+      the display icon. Follow the same pattern as the Ctrl/Alt/Meta
+      toggle key definitions.
+    maps_to: "e03s02"
+
+  - name: "Add Fn toggle to programmer keyboards"
+    description: >
+      Add the Fn toggle key (TOGGLE_FN_TRUE_KEYC on a swipe or tap) to
+      each programmer/variant keyboard: ENThumbKeyProgrammer,
+      ENThumbKeyProgrammerExpanded, ENThumbKeyProgrammerWide,
+      NOThumbKeyDataDriven, NOThumbKeyDataDrivenExpanded,
+      ENTypeSplitProgramming, ENSVThumbkeyProgrammer,
+      CZProgrammerMessagEase. Place Fn on a free swipe direction of the
+      same key that holds Ctrl/Alt, or on a dedicated key position.
+    maps_to: "e03s02"
 
 out_of_scope:
-  - item: "Auto-show on device unlock/boot"
+  - item: "Non-programmer keyboards"
     reason: >
-      Not requested. The keyboard stays visible once opened, but the user
-      must initially bring it up by focusing a text field or toggling the
-      IME. Auto-show requires accessibility service or notification
-      listener — significant complexity for marginal value.
+      Fn is only useful in contexts where F-keys are needed (IDEs,
+      terminals, debugging). Adding Fn to general-purpose keyboards
+      adds complexity without value. Users who want it can add it
+      via YAML key modifications.
 
-  - item: "Per-app persistence"
+  - item: "F13–F24 keys"
     reason: >
-      Same reasoning as floating mode — deferred. Global toggle covers the
-      primary use case. Per-app settings add deny-list complexity.
+      Android KeyEvent supports up to KEYCODE_F24 but these keys are
+      rarely used. Scope creep — can be added later if requested.
 
-  - item: "Auto-focus nearest text field on keypress"
+  - item: "Fn+other keys (beyond numbers and -/=)"
     reason: >
-      Not a hardware keyboard behavior. Hardware keyboards don't magically
-      focus text fields — the user navigates to them with Tab or taps.
-      Letter keys when nothing is focused send key events to the window
-      (which may or may not handle them, same as a hardware keyboard).
+      The primary use case is F1–F12. Fn+letter combos (like some laptop
+      keyboards) aren't standard on Android and would conflict with
+      existing Ctrl/Alt/Meta chord behavior.
 
-  - item: "Persistent mode in docked (non-floating) keyboard"
+  - item: "Per-app Fn behavior or Fn remapping"
     reason: >
-      Persistent mode is a floating-only feature. The docked keyboard
-      already has "Show on-screen keyboard" setting for always-visible
-      behavior. Persistent floating is for the overlay use case.
+      No customization needed initially. Fn always maps digits to F-keys.
+      The existing YAML key modification system can be extended later.
 
-  - item: "Customizable persistent indicator"
+  - item: "Settings UI for Fn"
     reason: >
-      Visual indicator is a fixed design element. No per-user theming or
-      positioning of the indicator — it follows a standard placement.
-
-  - item: "IME-aware key event injection (instrumenting other apps)"
-    reason: >
-      Key events are dispatched through the standard
-      InputMethodService.sendDownUpKeyEvents() and
-      currentInputConnection.sendKeyEvent() paths. When InputConnection
-      is null, key events go to the focused window via dispatchKeyEvent().
-      No accessibility service or instrumentation needed.
+      Fn is a modifier like Ctrl/Alt/Meta — it doesn't need persistent
+      settings. No Room DB schema changes needed.
 
 constraints:
-  - "Must be a sub-mode of floating — floating must be enabled first"
-  - "Floating keyboard with persistent=off must behave identically to current behavior (no regression)"
-  - "Docked keyboard behavior unchanged by any persistent mode changes"
-  - "Must not use accessibility service or system-level permissions"
-  - "Android 8.0+ (API 26) — same as floating mode"
+  - "Must follow the exact same tap/lock/clear UX as Ctrl, Alt, and Meta toggles"
+  - "No new KeyboardMode — Fn is a modifier bit, like Ctrl/Alt/Meta"
+  - "No changes to the KeyAction sealed class hierarchy that break exhaustive when branches"
+  - "Must update ALL when branches in performKeyAction()"
+  - "Must not regress existing modifier behavior (Ctrl/Alt/Meta chords still work)"
+  - "F-keys dispatch via the same sendDownUpKeyEvents / sendKeyEvent paths"
   - "No new external dependencies"
-  - "All source files committed"
   - "Preflight green: ./gradlew lintKotlin lint assembleDebug"
 
 success_criteria:
-  - "With persistent enabled, floating keyboard stays visible after text field loses focus"
-  - "Fling-down dismisses the keyboard (hides overlay AND IME)"
-  - "Ctrl+letter shortcuts (e.g. Ctrl+R, Ctrl+T) work in a web browser without a text field focused"
-  - "Arrow keys and Tab navigate web pages without a text field focused"
-  - "Letter/number keys send KeyEvents when no InputConnection exists"
-  - "With persistent disabled, floating keyboard hides on focus loss (unchanged behavior)"
-  - "Docked keyboard behavior unchanged in all cases"
-  - "Setting persists across app restart"
-  - "Visual indicator shows/hides correctly when persistent is toggled"
+  - "Single-tapping Fn + pressing 1 sends F1 (one-shot, Fn clears after)"
+  - "Double-tapping Fn locks it; subsequent 1-9,0,-,= send F-keys until Fn tapped again"
+  - "F1–F12 work in terminal apps (Termux) and browsers (Ctrl+F5 refresh, F12 devtools)"
+  - "Fn indicator shows in modifier status line with lock emoji when locked"
+  - "Ctrl/Alt/Meta chords still work correctly alongside Fn"
+  - "Non-programmer keyboards unchanged (no Fn toggle visible)"
   - "Preflight green: ./gradlew lintKotlin lint assembleDebug"
 
 references:
   - "../planning-context.yaml"
   - "../tech-architecture/tech-stack.md"
-  - "../../../thumb-key-modifier-plan.md"
+  - "../../key-modifications.yaml"

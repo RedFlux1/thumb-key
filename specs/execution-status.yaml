@@ -2,6 +2,11 @@
 # Auto-managed by bigpowers skills
 
 epics:
+  e03:
+    status: planned
+    stories:
+      e03s01: pending
+      e03s02: pending
   e02:
     status: done
     stories:
