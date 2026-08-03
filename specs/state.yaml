@@ -2,17 +2,18 @@
 # Auto-managed by bigpowers skills. Do not edit manually while skills are active.
 
 session:
-  active_epic: e02
+  active_epic: null
   active_story: null
   workflow_mode: solo-git
-  last_skill: develop-tdd
+  last_skill: survey-context
 
 handoff:
-  next_skill: verify-work
-  branch: feat/persistent-floating
-  worktree: /home/peder/Documents/thumbType/feat-persistent-floating
-  epic_dir: specs/epics/e02-persistent-floating
+  next_skill: commit-message
+  branch: main
+  worktree: null
+  epic_dir: null
 
 completed:
+  e02: persistent-floating (committed as 8baedfc)
   e01: floating-keyboard (committed as 88f6e93)
   e00: modifier-support (committed as 091e1c8..b767ae9, not planned via bigpowers)

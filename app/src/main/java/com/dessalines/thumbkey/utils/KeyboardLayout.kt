@@ -170,6 +170,7 @@ import com.dessalines.thumbkey.keyboards.KB_NL_THUMBKEY
 import com.dessalines.thumbkey.keyboards.KB_NL_TYPESPLIT
 import com.dessalines.thumbkey.keyboards.KB_NO_THUMBKEY
 import com.dessalines.thumbkey.keyboards.KB_NO_THUMBKEY_DATADRIVEN
+import com.dessalines.thumbkey.keyboards.KB_NO_THUMBKEY_DATADRIVEN_EXPANDED
 import com.dessalines.thumbkey.keyboards.KB_PL_MESSAGEASE
 import com.dessalines.thumbkey.keyboards.KB_PL_THUMBKEY
 import com.dessalines.thumbkey.keyboards.KB_PL_TYPESPLIT_SYMBOLS_V1
@@ -464,4 +465,7 @@ enum class KeyboardLayout(
     ENMessagEaseComposeFlipped(KB_EN_MESSAGEASE_COMPOSE_LEFT_FLIPPED_NUMPAD), // english messagease compose flipped
     FRMessagEaseFlipped(KB_FR_MESSAGEASE_LEFT_FLIPPED_NUMPAD), // français messagease left-handed flipped
     BNThumbKey(KB_BN_THUMBKEY), // বাংলা thumb-key
+    NOThumbKeyDataDrivenExpanded(
+        KB_NO_THUMBKEY_DATADRIVEN_EXPANDED,
+    ), // norsk thumb-key datadrevet programmering utvidet
 }
