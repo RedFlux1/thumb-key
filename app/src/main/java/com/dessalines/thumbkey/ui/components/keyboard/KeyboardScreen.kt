@@ -83,6 +83,7 @@ import com.dessalines.thumbkey.keyboards.NUMERIC_KEY_ITEM
 import com.dessalines.thumbkey.keyboards.RETURN_KEY_ITEM
 import com.dessalines.thumbkey.utils.CircularDragAction
 import com.dessalines.thumbkey.utils.ColorVariant
+import com.dessalines.thumbkey.utils.FN_MODE_ON
 import com.dessalines.thumbkey.utils.KeyAction
 import com.dessalines.thumbkey.utils.KeyboardLayout
 import com.dessalines.thumbkey.utils.KeyboardMode
@@ -445,6 +446,21 @@ fun KeyboardScreen(
                                             modLocked = modLocked and META_META_ON.inv()
                                         }
                                     },
+                                    onToggleFnMode = { enable ->
+                                        if (enable) {
+                                            if (activeModifiers and FN_MODE_ON == 0) {
+                                                activeModifiers = activeModifiers or FN_MODE_ON
+                                            } else if (modLocked and FN_MODE_ON == 0) {
+                                                modLocked = modLocked or FN_MODE_ON
+                                            } else {
+                                                activeModifiers = activeModifiers and FN_MODE_ON.inv()
+                                                modLocked = modLocked and FN_MODE_ON.inv()
+                                            }
+                                        } else {
+                                            activeModifiers = activeModifiers and FN_MODE_ON.inv()
+                                            modLocked = modLocked and FN_MODE_ON.inv()
+                                        }
+                                    },
                                     onToggleNumericMode = { enable ->
                                         mode =
                                             if (enable) {
@@ -652,6 +668,21 @@ fun KeyboardScreen(
                                         } else {
                                             activeModifiers = activeModifiers and META_META_ON.inv()
                                             modLocked = modLocked and META_META_ON.inv()
+                                        }
+                                    },
+                                    onToggleFnMode = { enable ->
+                                        if (enable) {
+                                            if (activeModifiers and FN_MODE_ON == 0) {
+                                                activeModifiers = activeModifiers or FN_MODE_ON
+                                            } else if (modLocked and FN_MODE_ON == 0) {
+                                                modLocked = modLocked or FN_MODE_ON
+                                            } else {
+                                                activeModifiers = activeModifiers and FN_MODE_ON.inv()
+                                                modLocked = modLocked and FN_MODE_ON.inv()
+                                            }
+                                        } else {
+                                            activeModifiers = activeModifiers and FN_MODE_ON.inv()
+                                            modLocked = modLocked and FN_MODE_ON.inv()
                                         }
                                     },
                                     onToggleNumericMode = { enable ->
@@ -872,6 +903,7 @@ fun KeyboardScreen(
                                     if (activeModifiers and KeyEvent.META_ALT_ON != 0) append("Alt ")
                                     if (activeModifiers and KeyEvent.META_SHIFT_ON != 0) append("Shift ")
                                     if (activeModifiers and META_META_ON != 0) append("Meta ")
+                                    if (activeModifiers and FN_MODE_ON != 0) append("Fn ")
                                     if (modLocked != 0) append("\uD83D\uDD12")
                                 },
                             style = MaterialTheme.typography.labelSmall,
@@ -989,6 +1021,21 @@ fun KeyboardScreen(
                                             } else {
                                                 activeModifiers = activeModifiers and META_META_ON.inv()
                                                 modLocked = modLocked and META_META_ON.inv()
+                                            }
+                                        },
+                                        onToggleFnMode = { enable ->
+                                            if (enable) {
+                                                if (activeModifiers and FN_MODE_ON == 0) {
+                                                    activeModifiers = activeModifiers or FN_MODE_ON
+                                                } else if (modLocked and FN_MODE_ON == 0) {
+                                                    modLocked = modLocked or FN_MODE_ON
+                                                } else {
+                                                    activeModifiers = activeModifiers and FN_MODE_ON.inv()
+                                                    modLocked = modLocked and FN_MODE_ON.inv()
+                                                }
+                                            } else {
+                                                activeModifiers = activeModifiers and FN_MODE_ON.inv()
+                                                modLocked = modLocked and FN_MODE_ON.inv()
                                             }
                                         },
                                         onToggleNumericMode = { enable ->

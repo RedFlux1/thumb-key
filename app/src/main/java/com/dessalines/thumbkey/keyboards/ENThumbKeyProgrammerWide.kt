@@ -119,7 +119,13 @@ val KB_EN_THUMBKEY_PROGRAMMING_WIDE_MAIN =
                     topRight = KeyC("}", color = MUTED),
                     bottomRight = KeyC("]", color = MUTED),
                 ),
-                RETURN_KEY_ITEM,
+                KeyItemC(
+                    center = RETURN_KEYC,
+                    swipeType = FOUR_WAY_DIAGONAL,
+                    topRight = TOGGLE_FN_TRUE_KEYC,
+                    backgroundColor = SURFACE_VARIANT,
+                    longPress = CommitText("\n"),
+                ),
             ),
         ),
     )
@@ -234,7 +240,13 @@ val KB_EN_THUMBKEY_PROGRAMMING_WIDE_SHIFTED =
                     bottomRight = KeyC("]", color = MUTED),
                     right = KeyC(".com", color = MUTED, size = SMALLEST),
                 ),
-                RETURN_KEY_ITEM,
+                KeyItemC(
+                    center = RETURN_KEYC,
+                    swipeType = FOUR_WAY_DIAGONAL,
+                    topRight = TOGGLE_FN_TRUE_KEYC,
+                    backgroundColor = SURFACE_VARIANT,
+                    longPress = CommitText("\n"),
+                ),
             ),
         ),
     )
@@ -316,7 +328,13 @@ val NUMERIC_KEYBOARD_WIDE =
                     bottomLeft = KeyC(";"),
                     left = KeyC("#"),
                 ),
-                RETURN_KEY_ITEM,
+                KeyItemC(
+                    center = RETURN_KEYC,
+                    swipeType = FOUR_WAY_DIAGONAL,
+                    topRight = TOGGLE_FN_TRUE_KEYC,
+                    backgroundColor = SURFACE_VARIANT,
+                    longPress = CommitText("\n"),
+                ),
             ),
         ),
     )

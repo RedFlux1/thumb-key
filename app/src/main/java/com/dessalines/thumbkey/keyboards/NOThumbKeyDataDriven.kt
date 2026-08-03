@@ -97,6 +97,7 @@ val RETURN_DATADRIVEN_KEY_ITEM =
                     ),
                 display = null,
             ),
+        bottom = TOGGLE_FN_TRUE_KEYC,
         backgroundColor = SURFACE_VARIANT,
         longPress = CommitText("\n"),
     )

@@ -9,6 +9,7 @@ import com.dessalines.thumbkey.R
 import com.dessalines.thumbkey.textprocessors.TextProcessor
 
 const val META_META_ON = 0x10000 // Custom Meta/Super key modifier flag
+const val FN_MODE_ON = 0x20000 // Custom Fn key modifier flag
 
 @optics
 data class KeyboardDefinitionModes(
@@ -205,6 +206,10 @@ sealed class KeyAction {
     ) : KeyAction()
 
     class ToggleMetaMode(
+        val enable: Boolean,
+    ) : KeyAction()
+
+    class ToggleFnMode(
         val enable: Boolean,
     ) : KeyAction()
 

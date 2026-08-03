@@ -247,6 +247,20 @@ val TOGGLE_META_FALSE_KEYC =
         color = MUTED,
     )
 
+val TOGGLE_FN_TRUE_KEYC =
+    KeyC(
+        display = KeyDisplay.TextDisplay("Fn"),
+        action = ToggleFnMode(true),
+        color = MUTED,
+    )
+
+val TOGGLE_FN_FALSE_KEYC =
+    KeyC(
+        display = KeyDisplay.IconDisplay(Icons.Outlined.KeyboardDoubleArrowDown),
+        action = ToggleFnMode(false),
+        color = MUTED,
+    )
+
 val TOGGLE_FLOATING_MODE_KEYC =
     KeyC(
         display = KeyDisplay.IconDisplay(Icons.Outlined.OpenInFull),
@@ -407,12 +421,13 @@ val SPACEBAR_PROGRAMMING_BOTTOM_KEYC =
 val SPACEBAR_PROGRAMMING_KEY_ITEM =
     KeyItemC(
         center = SPACEBAR_CENTER_KEYC,
-        swipeType = FOUR_WAY_CROSS,
+        swipeType = EIGHT_WAY,
         slideType = SlideType.MOVE_CURSOR,
         left = SPACEBAR_LEFT_KEYC,
         right = SPACEBAR_RIGHT_KEYC,
         top = SPACEBAR_PROGRAMMING_TOP_KEYC,
         bottom = SPACEBAR_PROGRAMMING_BOTTOM_KEYC,
+        topRight = TOGGLE_FN_TRUE_KEYC,
         backgroundColor = SURFACE_VARIANT,
         widthMultiplier = 3,
     )
