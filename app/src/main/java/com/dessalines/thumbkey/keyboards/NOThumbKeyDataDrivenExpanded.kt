@@ -12,9 +12,9 @@ import com.dessalines.thumbkey.utils.FontSizeVariant.*
 import com.dessalines.thumbkey.utils.KeyAction.*
 import com.dessalines.thumbkey.utils.SwipeNWay.*
 
-// Norwegian data-driven programming layout — expanded (5×4 grid with number column).
-// Numbers on the left, programming symbols on swipes,
-// arrow-key spacebar with Ctrl/Alt, Escape/Tab, custom numeric layer with letters.
+// Norwegian data-driven expanded layout (5×4 grid with number column).
+// Numbers on the left, arrow-key spacebar with Ctrl/Alt, Escape/Tab.
+// Programming symbols live on the numeric layer.
 
 // ═══════════════════════════════════════════════════
 //  Shared key items (reused from NOThumbKeyDataDriven)
@@ -121,25 +121,15 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_MAIN =
                     center = KeyC("n", size = LARGE),
                     swipeType = FOUR_WAY_DIAGONAL,
                     bottomRight = KeyC("v"),
-                    topLeft = KeyC("/", color = MUTED),
-                    topRight = KeyC("\\", color = MUTED),
-                    bottomLeft = KeyC("(", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("l", size = LARGE),
                     bottom = KeyC("m"),
-                    top = KeyC("^", color = MUTED),
-                    left = KeyC("<", color = MUTED),
-                    right = KeyC(">", color = MUTED),
-                    topLeft = KeyC("\"", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("a", size = LARGE),
                     swipeType = FOUR_WAY_DIAGONAL,
                     bottomLeft = KeyC("u"),
-                    topLeft = KeyC("=", color = MUTED),
-                    topRight = KeyC("+", color = MUTED),
-                    bottomRight = KeyC(")", color = MUTED),
                 ),
                 EMOJI_KEY_ITEM,
             ),
@@ -152,13 +142,8 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_MAIN =
                 ),
                 KeyItemC(
                     center = KeyC("t", size = LARGE),
+                    swipeType = TWO_WAY_HORIZONTAL,
                     right = KeyC("d"),
-                    top = KeyC("@", color = MUTED),
-                    bottom = KeyC("$", color = MUTED),
-                    topLeft = KeyC("#", color = MUTED),
-                    topRight = KeyC("!", color = MUTED),
-                    bottomLeft = KeyC("|", color = MUTED),
-                    bottomRight = KeyC("%", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("s", size = LARGE),
@@ -187,12 +172,6 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_MAIN =
                             ToggleShiftMode(false),
                             swipeReturnAction = ToggleCurrentWordCapitalization(false),
                         ),
-                    right =
-                        KeyC(
-                            display = KeyDisplay.IconDisplay(Icons.AutoMirrored.Outlined.KeyboardTab),
-                            action = CommitText("\t"),
-                            color = MUTED,
-                        ),
                 ),
                 NUMERIC_KEY_ITEM,
             ),
@@ -207,10 +186,6 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_MAIN =
                     center = KeyC("r", size = LARGE),
                     topRight = KeyC("g"),
                     right = KeyC("z"),
-                    topLeft = KeyC("{", color = MUTED),
-                    bottomLeft = KeyC("[", color = MUTED),
-                    bottom = KeyC(",", color = MUTED),
-                    bottomRight = KeyC(";", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("o", size = LARGE),
@@ -220,16 +195,12 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_MAIN =
                     bottomRight = KeyC("-", color = MUTED),
                     bottom = KeyC(".", color = MUTED),
                     bottomLeft = KeyC("*", color = MUTED),
-                    left = KeyC("&", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("e", size = LARGE),
                     topLeft = KeyC("f"),
                     top = KeyC("q"),
                     left = KeyC("x"),
-                    bottomLeft = KeyC(":", color = MUTED),
-                    topRight = KeyC("}", color = MUTED),
-                    bottomRight = KeyC("]", color = MUTED),
                 ),
                 BACKSPACE_KEY_ITEM,
             ),
@@ -261,25 +232,15 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_SHIFTED =
                     center = KeyC("N", size = LARGE),
                     swipeType = FOUR_WAY_DIAGONAL,
                     bottomRight = KeyC("V"),
-                    topLeft = KeyC("~", color = MUTED),
-                    topRight = KeyC("\\", color = MUTED),
-                    bottomLeft = KeyC("(", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("L", size = LARGE),
                     bottom = KeyC("M"),
-                    top = KeyC("^", color = MUTED),
-                    left = KeyC("<", color = MUTED),
-                    right = KeyC(">", color = MUTED),
-                    topLeft = KeyC("\"", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("A", size = LARGE),
                     swipeType = FOUR_WAY_DIAGONAL,
                     bottomLeft = KeyC("U"),
-                    topLeft = KeyC("=", color = MUTED),
-                    topRight = KeyC("+", color = MUTED),
-                    bottomRight = KeyC(")", color = MUTED),
                 ),
                 EMOJI_KEY_ITEM,
             ),
@@ -292,13 +253,8 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_SHIFTED =
                 ),
                 KeyItemC(
                     center = KeyC("T", size = LARGE),
+                    swipeType = TWO_WAY_HORIZONTAL,
                     right = KeyC("D"),
-                    top = KeyC("@", color = MUTED),
-                    bottom = KeyC("€", color = MUTED),
-                    topLeft = KeyC("#", color = MUTED),
-                    topRight = KeyC("!", color = MUTED),
-                    bottomLeft = KeyC("|", color = MUTED),
-                    bottomRight = KeyC("%", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("S", size = LARGE),
@@ -330,12 +286,6 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_SHIFTED =
                             swipeReturnAction = ToggleCurrentWordCapitalization(true),
                             color = MUTED,
                         ),
-                    right =
-                        KeyC(
-                            display = KeyDisplay.IconDisplay(Icons.AutoMirrored.Outlined.KeyboardTab),
-                            action = CommitText("\t"),
-                            color = MUTED,
-                        ),
                 ),
                 NUMERIC_KEY_ITEM,
             ),
@@ -350,29 +300,21 @@ val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_SHIFTED =
                     center = KeyC("R", size = LARGE),
                     topRight = KeyC("G"),
                     right = KeyC("Z"),
-                    topLeft = KeyC("{", color = MUTED),
-                    bottomLeft = KeyC("[", color = MUTED),
-                    bottom = KeyC(",", color = MUTED),
-                    bottomRight = KeyC(";", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("O", size = LARGE),
                     top = KeyC("K"),
                     topRight = KeyC("'", color = MUTED),
                     right = KeyC("W"),
-                    bottomRight = KeyC("_", color = MUTED),
+                    bottomRight = KeyC("-", color = MUTED),
                     bottom = KeyC(".", color = MUTED),
                     bottomLeft = KeyC("*", color = MUTED),
-                    left = KeyC("&", color = MUTED),
                 ),
                 KeyItemC(
                     center = KeyC("E", size = LARGE),
                     topLeft = KeyC("F"),
                     top = KeyC("Q"),
                     left = KeyC("X"),
-                    bottomLeft = KeyC(":", color = MUTED),
-                    topRight = KeyC("}", color = MUTED),
-                    bottomRight = KeyC("]", color = MUTED),
                 ),
                 BACKSPACE_KEY_ITEM,
             ),
@@ -406,6 +348,22 @@ val NUMERIC_KEYBOARD_NO_EXPANDED =
                 ),
                 KeyItemC(
                     center = KeyC("1", size = LARGE),
+                    left =
+                        KeyC(
+                            display = KeyDisplay.IconDisplay(Icons.AutoMirrored.Outlined.KeyboardTab),
+                            action =
+                                SendEvent(
+                                    KeyEvent(
+                                        0L,
+                                        0L,
+                                        KeyEvent.ACTION_DOWN,
+                                        KeyEvent.KEYCODE_TAB,
+                                        0,
+                                        KeyEvent.META_SHIFT_ON,
+                                    ),
+                                ),
+                            color = MUTED,
+                        ),
                     bottomLeft = KeyC("$"),
                 ),
                 KeyItemC(
@@ -421,6 +379,12 @@ val NUMERIC_KEYBOARD_NO_EXPANDED =
                 KeyItemC(
                     center = KeyC("3", size = LARGE),
                     left = KeyC("?"),
+                    right =
+                        KeyC(
+                            display = KeyDisplay.IconDisplay(Icons.AutoMirrored.Outlined.KeyboardTab),
+                            action = CommitText("\t"),
+                            color = MUTED,
+                        ),
                     bottomRight = KeyC("€"),
                     bottomLeft = KeyC("£"),
                     bottom = KeyC("="),
@@ -531,7 +495,7 @@ val NUMERIC_KEYBOARD_NO_EXPANDED =
 
 val KB_NO_THUMBKEY_DATADRIVEN_EXPANDED: KeyboardDefinition =
     KeyboardDefinition(
-        title = "norsk thumb-key datadrevet programmering utvidet",
+        title = "norsk thumb-key datadrevet utvidet",
         modes =
             KeyboardDefinitionModes(
                 main = KB_NO_THUMBKEY_DATADRIVEN_EXPANDED_MAIN,

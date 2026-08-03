@@ -2,6 +2,9 @@
 
 package com.dessalines.thumbkey.keyboards
 
+import android.view.KeyEvent
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.*
 import com.dessalines.thumbkey.utils.*
 import com.dessalines.thumbkey.utils.ColorVariant.*
 import com.dessalines.thumbkey.utils.FontSizeVariant.*
@@ -14,6 +17,22 @@ val NUMERIC_KEYBOARD =
             listOf(
                 KeyItemC(
                     center = KeyC("1", size = LARGE),
+                    left =
+                        KeyC(
+                            display = KeyDisplay.IconDisplay(Icons.AutoMirrored.Outlined.KeyboardTab),
+                            action =
+                                SendEvent(
+                                    KeyEvent(
+                                        0L,
+                                        0L,
+                                        KeyEvent.ACTION_DOWN,
+                                        KeyEvent.KEYCODE_TAB,
+                                        0,
+                                        KeyEvent.META_SHIFT_ON,
+                                    ),
+                                ),
+                            color = MUTED,
+                        ),
                     bottomLeft = KeyC("$"),
                     bottomRight =
                         getLocalCurrency()?.let {
@@ -37,6 +56,12 @@ val NUMERIC_KEYBOARD =
                 KeyItemC(
                     center = KeyC("3", size = LARGE),
                     left = KeyC("?"),
+                    right =
+                        KeyC(
+                            display = KeyDisplay.IconDisplay(Icons.AutoMirrored.Outlined.KeyboardTab),
+                            action = CommitText("	"),
+                            color = MUTED,
+                        ),
                     bottomRight = KeyC("€"),
                     bottomLeft = KeyC("£"),
                     bottom = KeyC("="),

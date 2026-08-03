@@ -1,54 +1,23 @@
-# specs/planning-context.yaml — written by elaborate-spec (2026-08-02)
-# Consumed by scope-work and slice-tasks
-
-feature_name: "Floating Keyboard Mode"
-
+# specs/planning-context.yaml — written by elaborate-spec
+feature_name: "revert-no-programmer-letters"
 problem_statement: >
-  Thumb-Key is always docked at the bottom of the screen. Users (especially on
-  tablets, foldables, or in landscape orientation) want to reposition the keyboard
-  so it doesn't cover content or require reaching to the bottom edge. The keyboard
-  should float as a draggable overlay, replacing the docked IME whenever a text
-  field is focused.
-
+  The NOThumbKeyDataDriven layout had 27 programming symbols scattered onto
+  letter key swipes (commit e783e48). All 27 symbols already exist on the
+  standard NUMERIC_KEYBOARD. The letter keys should be reverted to their
+  original clean state (letters only), the custom spacebar and return key
+  customizations preserved, and the only missing action — Tab — added to
+  the numeric layer (key 3, right swipe).
 constraints:
-  - "Must follow normal IME focus lifecycle: show on input focus, hide on focus loss"
-  - "Must not interfere with existing Ctrl/Alt/Meta modifier support (already on main)"
-  - "Taps outside the floating keyboard must pass through to the app below"
-  - "Android 8.0+ (API 26) minimum for TYPE_APPLICATION_OVERLAY"
-  - "Keyboard size uses existing keyboard size settings — no floating-specific size controls"
-  - "All source files must be committed (lesson from prior reverted attempt)"
-
+  - "Do not modify NUMERIC_KEYBOARD globally — only NOThumbKeyDataDriven should reference a custom numeric layer"
+  - "Keep custom spacebar (SPACEBAR_DATADRIVEN_KEY_ITEM) and return key (RETURN_DATADRIVEN_KEY_ITEM) as-is"
+  - "Restore swipeType = TWO_WAY_HORIZONTAL on t key"
 out_of_scope:
-  - "Per-app floating mode (global toggle only in initial version)"
-  - "Emoji/clipboard mode: dock-vs-float behavior toggle (deferred; architecture should support it later)"
-  - "Manual X/Y position input fields in settings (position learned from drag only)"
-  - "Floating-specific keyboard size controls (reuses existing size settings)"
-
+  - "NOThumbKeyDataDrivenExpanded layout"
+  - "Any layout other than NOThumbKeyDataDriven"
 key_decisions:
-  - decision: "Use WindowManager.addView() with TYPE_APPLICATION_OVERLAY for the floating window"
-    rationale: >
-      Same approach as prior attempt — creates a true overlay above all apps.
-      Fix lifecycle bugs by synchronizing only with onStartInput/onFinishInput,
-      not onWindowShown/onWindowHidden.
-
-  - decision: "Floating visually identical to docked keyboard (same Compose content, same size)"
-    rationale: >
-      User wants identical appearance. Keyboard size controlled by existing
-      settings. Only addition is a narrow drag handle bar at the top.
-
-  - decision: "Position persists per-orientation (portrait vs landscape)"
-    rationale: >
-      Different orientations have different screen geometries. A position
-      that works in portrait may be off-screen in landscape.
-
-  - decision: "Fling-down on drag handle dismisses floating mode (not just hides keyboard)"
-    rationale: >
-      Fling-down = intent to stop floating. Disables floating mode so next
-      input session returns to docked keyboard. Drag-and-release without fling
-      just repositions.
-
-  - decision: "Initial settings: toggle on/off + opacity slider"
-    rationale: >
-      Position learned from drag gestures, no manual coordinate entry needed.
-      Keyboard size reuses existing size settings. Emoji/clipboard behavior
-      toggle deferred.
+  - decision: "Revert NOThumbKeyDataDriven letter keys to pre-e783e48 state"
+    rationale: "All programming symbols already exist on the numeric layer; duplicating them on letter keys clutters the layout and breaks muscle memory"
+  - decision: "Add Tab to numeric layer key 3 right swipe"
+    rationale: "Tab was the only non-symbol action added to letter keys that has no equivalent on the numeric layer. Key 3 right swipe is free and doesn't conflict with any letter key positions"
+  - decision: "Create a custom numeric keyboard for NOThumbKeyDataDriven instead of modifying the shared NUMERIC_KEYBOARD"
+    rationale: "Other layouts (>50) use NUMERIC_KEYBOARD; adding Tab globally would affect all of them"

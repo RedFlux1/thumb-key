@@ -2,18 +2,24 @@
 # Auto-managed by bigpowers skills. Do not edit manually while skills are active.
 
 session:
-  active_epic: e03
-  active_story: e03s02
+  active_epic: null
+  active_story: null
   workflow_mode: solo-git
-  last_skill: develop-tdd
+  last_skill: null
 
 handoff:
-  next_skill: develop-tdd
-  branch: feat/fn-keys
-  worktree: ../thumb-key-fn-keys
-  epic_dir: specs/epics/e03-function-keys
+  next_skill: null
+  branch: main
+  worktree: null
+  epic_dir: null
+
+completed:
+  e03: function-keys (committed as ae02e65)
 
 completed:
   e02: persistent-floating (committed as 8baedfc)
   e01: floating-keyboard (committed as 88f6e93)
   e00: modifier-support (committed as 091e1c8..b767ae9, not planned via bigpowers)
+
+recent:
+  cleanup-no-programmer-letters: removed programming symbols from NOThumbKeyDataDriven and NOThumbKeyDataDrivenExpanded letter keys, moved Tab/Shift-Tab to numeric layer (committed as pending)
