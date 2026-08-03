@@ -144,7 +144,13 @@ val KB_EN_TYPESPLIT_PROGRAMMING_MAIN =
             listOf(
                 EMOJI_KEY_ITEM,
                 SPACEBAR_KEY_ITEM,
-                RETURN_KEY_ITEM,
+                KeyItemC(
+                    center = RETURN_KEYC,
+                    swipeType = FOUR_WAY_DIAGONAL,
+                    topRight = TOGGLE_FN_TRUE_KEYC,
+                    backgroundColor = SURFACE_VARIANT,
+                    longPress = CommitText("\n"),
+                ),
             ),
         ),
     )
@@ -284,7 +290,13 @@ val KB_EN_TYPESPLIT_PROGRAMMING_SHIFTED =
             listOf(
                 EMOJI_KEY_ITEM,
                 SPACEBAR_KEY_ITEM,
-                RETURN_KEY_ITEM,
+                KeyItemC(
+                    center = RETURN_KEYC,
+                    swipeType = FOUR_WAY_DIAGONAL,
+                    topRight = TOGGLE_FN_TRUE_KEYC,
+                    backgroundColor = SURFACE_VARIANT,
+                    longPress = CommitText("\n"),
+                ),
             ),
         ),
     )
@@ -391,7 +403,13 @@ val KB_EN_TYPESPLIT_PROGRAMMING_NUMERIC =
             listOf(
                 EMOJI_KEY_ITEM,
                 SPACEBAR_KEY_ITEM,
-                RETURN_KEY_ITEM,
+                KeyItemC(
+                    center = RETURN_KEYC,
+                    swipeType = FOUR_WAY_DIAGONAL,
+                    topRight = TOGGLE_FN_TRUE_KEYC,
+                    backgroundColor = SURFACE_VARIANT,
+                    longPress = CommitText("\n"),
+                ),
             ),
         ),
     )

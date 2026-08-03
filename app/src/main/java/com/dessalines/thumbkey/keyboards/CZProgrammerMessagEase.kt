@@ -152,7 +152,13 @@ val KB_CZ_MESSAGEASE_PROGRAMMING_MAIN =
             ),
             listOf(
                 SPACEBAR_ZERO_KEY_ITEM,
-                RETURN_KEY_ITEM,
+                KeyItemC(
+                    center = RETURN_KEYC,
+                    swipeType = FOUR_WAY_DIAGONAL,
+                    topRight = TOGGLE_FN_TRUE_KEYC,
+                    backgroundColor = SURFACE_VARIANT,
+                    longPress = CommitText("\n"),
+                ),
             ),
         ),
     )
@@ -301,7 +307,13 @@ val KB_CZ_MESSAGEASE_PROGRAMMING_SHIFTED =
             ),
             listOf(
                 SPACEBAR_ZERO_KEY_ITEM,
-                RETURN_KEY_ITEM,
+                KeyItemC(
+                    center = RETURN_KEYC,
+                    swipeType = FOUR_WAY_DIAGONAL,
+                    topRight = TOGGLE_FN_TRUE_KEYC,
+                    backgroundColor = SURFACE_VARIANT,
+                    longPress = CommitText("\n"),
+                ),
             ),
         ),
     )

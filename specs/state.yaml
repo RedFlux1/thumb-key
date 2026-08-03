@@ -2,16 +2,16 @@
 # Auto-managed by bigpowers skills. Do not edit manually while skills are active.
 
 session:
-  active_epic: null
-  active_story: null
+  active_epic: e03
+  active_story: e03s02
   workflow_mode: solo-git
-  last_skill: survey-context
+  last_skill: develop-tdd
 
 handoff:
-  next_skill: commit-message
-  branch: main
-  worktree: null
-  epic_dir: null
+  next_skill: develop-tdd
+  branch: feat/fn-keys
+  worktree: ../thumb-key-fn-keys
+  epic_dir: specs/epics/e03-function-keys
 
 completed:
   e02: persistent-floating (committed as 8baedfc)

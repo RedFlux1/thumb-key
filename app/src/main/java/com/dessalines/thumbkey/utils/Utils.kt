@@ -400,6 +400,7 @@ fun performKeyAction(
     onToggleCtrlMode: (enable: Boolean) -> Unit,
     onToggleAltMode: (enable: Boolean) -> Unit,
     onToggleMetaMode: (enable: Boolean) -> Unit,
+    onToggleFnMode: (enable: Boolean) -> Unit,
     onToggleNumericMode: (enable: Boolean) -> Unit,
     onToggleEmojiMode: (enable: Boolean) -> Unit,
     onToggleClipboardMode: (enable: Boolean) -> Unit,
@@ -416,6 +417,42 @@ fun performKeyAction(
             val text = action.text
             Log.d(TAG, "committing key text: $text, activeModifiers=$activeModifiers")
             val ic = ime.currentInputConnection
+
+            // Fn mode: map digits and -/= to function keys
+            if ((activeModifiers and FN_MODE_ON) != 0 && text.length == 1) {
+                val fnKeyCode =
+                    when (text[0]) {
+                        '1' -> KeyEvent.KEYCODE_F1
+                        '2' -> KeyEvent.KEYCODE_F2
+                        '3' -> KeyEvent.KEYCODE_F3
+                        '4' -> KeyEvent.KEYCODE_F4
+                        '5' -> KeyEvent.KEYCODE_F5
+                        '6' -> KeyEvent.KEYCODE_F6
+                        '7' -> KeyEvent.KEYCODE_F7
+                        '8' -> KeyEvent.KEYCODE_F8
+                        '9' -> KeyEvent.KEYCODE_F9
+                        '0' -> KeyEvent.KEYCODE_F10
+                        '-' -> KeyEvent.KEYCODE_F11
+                        '=' -> KeyEvent.KEYCODE_F12
+                        else -> KeyEvent.KEYCODE_UNKNOWN
+                    }
+                if (fnKeyCode != KeyEvent.KEYCODE_UNKNOWN) {
+                    Log.d(TAG, "Fn key: char=${text[0]} → keyCode=$fnKeyCode")
+                    if (ic != null) {
+                        ic.sendKeyEvent(
+                            KeyEvent(KeyEvent.ACTION_DOWN, fnKeyCode),
+                        )
+                        ic.sendKeyEvent(
+                            KeyEvent(KeyEvent.ACTION_UP, fnKeyCode),
+                        )
+                    } else {
+                        ime.sendDownUpKeyEvents(fnKeyCode)
+                    }
+                    ime.ignoreNextCursorMove()
+                    onKeyEvent()
+                    return
+                }
+            }
 
             if (activeModifiers != 0 && text.length == 1 && charToKeyCode(text[0]) != KeyEvent.KEYCODE_UNKNOWN) {
                 // Modifier chord: send KeyEvent with meta flags
@@ -1355,6 +1392,12 @@ fun performKeyAction(
             val enable = action.enable
             Log.d(TAG, "Toggling Metaed: $enable")
             onToggleMetaMode(enable)
+        }
+
+        is KeyAction.ToggleFnMode -> {
+            val enable = action.enable
+            Log.d(TAG, "Toggling Fn: $enable")
+            onToggleFnMode(enable)
         }
 
         is KeyAction.ToggleFloatingMode -> {
