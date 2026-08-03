@@ -161,7 +161,7 @@ fun KeyboardKey(
             slideSensitivity + slideEnabled + slideCursorMovementMode + slideSpacebarDeadzoneEnabled +
             slideBackspaceDeadzoneEnabled + dragReturnEnabled + circularDragEnabled +
             clockwiseDragAction.ordinal + counterclockwiseDragAction.ordinal +
-            slideHoldEnabled
+            slideHoldEnabled + activeModifiers + capsLock
 
     val ctx = LocalContext.current
     val ime = ctx as IMEService
