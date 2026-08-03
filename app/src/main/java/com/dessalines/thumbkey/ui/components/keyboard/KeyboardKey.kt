@@ -37,6 +37,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -161,7 +162,10 @@ fun KeyboardKey(
             slideSensitivity + slideEnabled + slideCursorMovementMode + slideSpacebarDeadzoneEnabled +
             slideBackspaceDeadzoneEnabled + dragReturnEnabled + circularDragEnabled +
             clockwiseDragAction.ordinal + counterclockwiseDragAction.ordinal +
-            slideHoldEnabled + activeModifiers + capsLock
+            slideHoldEnabled + capsLock
+
+    // Always read the latest activeModifiers inside stale lambdas (pointerInput, onClick)
+    val currentActiveModifiers by rememberUpdatedState(activeModifiers)
 
     val ctx = LocalContext.current
     val ime = ctx as IMEService
@@ -433,7 +437,7 @@ fun KeyboardKey(
                         onSwitchLanguage = onSwitchLanguage,
                         onChangePosition = onChangePosition,
                         onKeyEvent = onKeyEvent,
-                        activeModifiers = activeModifiers,
+                        activeModifiers = currentActiveModifiers,
                     )
                     doneKeyAction(scope, action, isDragged, releasedKey, animationHelperSpeed)
                 },
@@ -458,7 +462,7 @@ fun KeyboardKey(
                             onSwitchLanguage = onSwitchLanguage,
                             onChangePosition = onChangePosition,
                             onKeyEvent = onKeyEvent,
-                            activeModifiers = activeModifiers,
+                            activeModifiers = currentActiveModifiers,
                         )
                         doneKeyAction(scope, action, isDragged, releasedKey, animationHelperSpeed)
                         if (vibrateOnTap) {
@@ -758,7 +762,7 @@ fun KeyboardKey(
                                 onSwitchLanguage = onSwitchLanguage,
                                 onChangePosition = onChangePosition,
                                 onKeyEvent = onKeyEvent,
-                                activeModifiers = activeModifiers,
+                                activeModifiers = currentActiveModifiers,
                             )
                             doneKeyAction(
                                 scope,
@@ -799,7 +803,7 @@ fun KeyboardKey(
                                         onSwitchLanguage = onSwitchLanguage,
                                         onChangePosition = onChangePosition,
                                         onKeyEvent = onKeyEvent,
-                                        activeModifiers = activeModifiers,
+                                        activeModifiers = currentActiveModifiers,
                                     )
                                 }
                                 // Play an extra haptic effect on supported devices when slide deleting text
