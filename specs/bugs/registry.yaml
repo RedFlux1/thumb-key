@@ -1,4 +1,12 @@
 bugs:
+  - bug_id: BUG-2026-clipboard-image-crash
+    date: 2026-08-15
+    severity: high
+    priority: high
+    scope: clipboard
+    summary: "Copying an image to the clipboard crashes the keyboard: unguarded coerceToText on non-text clips in ThumbKeyClipboardManager.clipboardListener"
+    file: specs/bugs/BUG-2026-clipboard-image-crash.md
+    status: resolved
   - bug_id: BUG-2026-stale-modifiers
     date: 2026-08-03
     severity: medium

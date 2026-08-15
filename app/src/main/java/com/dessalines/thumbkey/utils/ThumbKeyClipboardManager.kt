@@ -9,6 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
+private const val TEXT_MIME_PREFIX = "text/"
+
 class ThumbKeyClipboardManager(
     private val context: Context,
     private val clipboardRepository: ClipboardRepository,
@@ -19,8 +21,8 @@ class ThumbKeyClipboardManager(
     private var isListening = false
     private var lastClipText: String? = null
 
-// Used to manage data with a non-text MEME type, when private clipboard is enabled
-// When copying data with a MIME type different than a text, e.g. a picture, it is not added to the history, as it’s not a text. With standard paste it’s not an issue as the paste will still paste it.
+// Used to manage data with a non-text MIME type, when private clipboard is enabled
+// When copying data with a MIME type different than a text, e.g. a picture, it is not added to the history, as it's not a text. With standard paste it's not an issue as the paste will still paste it.
 // However if we paste from the internal clipboard, it will paste the latest string in the history, and not the picture that was only in the system clipboard.
     private var wasLastCopyOperationDoneViaSystem: Boolean = true
 
@@ -37,8 +39,32 @@ class ThumbKeyClipboardManager(
         ClipboardManager.OnPrimaryClipChangedListener {
             val clip = systemClipboardManager.primaryClip
             if (clip == null || clip.itemCount == 0) return@OnPrimaryClipChangedListener
-            val text = clip.getItemAt(0).coerceToText(context).toString()
-            addToClipboardRepo(text)
+
+            // Only text clips belong in history. Non-text clips (e.g. images) cannot be
+            // stored, and coercing their URIs to text can throw when the content provider
+            // denies access or the URI cannot be resolved (crashing the keyboard).
+            val description = clip.description
+            val hasTextMime =
+                (0 until description.mimeTypeCount).any { index ->
+                    val mimeType = description.getMimeType(index)
+                    mimeType?.startsWith(TEXT_MIME_PREFIX) == true
+                }
+
+            if (hasTextMime) {
+                val text =
+                    try {
+                        clip.getItemAt(0).coerceToText(context)?.toString()
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to coerce clipboard content to text", e)
+                        null
+                    }
+                if (!text.isNullOrBlank()) {
+                    addToClipboardRepo(text)
+                }
+            }
+
+            // Non-text clips are still system copies: pasting them must go through the
+            // system clipboard, not the internal text history.
             wasLastCopyOperationDoneViaSystem = true
         }
 
