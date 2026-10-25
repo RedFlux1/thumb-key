@@ -40,17 +40,24 @@ class IMEService :
     SavedStateRegistryOwner {
     internal val floatingController by lazy { FloatingKeyboardController(this) }
 
+    /**
+     * Synchronous settings snapshot. Mode decisions MUST use this, not
+     * `appSettings.value`: LiveData updates asynchronously after a write, and
+     * a stale read during rotation (e.g. a second `onWindowShown` firing
+     * before Room delivers the invalidation) re-entered the overlay while
+     * the input view was already docked — two keyboards, orphaned forever.
+     */
+    internal fun settingsSnapshot() = (application as ThumbkeyApplication).appSettingsRepository.getSettingsSnapshot()
+
     internal fun isFloatingModeEnabled(): Boolean {
-        val app = application as ThumbkeyApplication
-        val settings = app.appSettingsRepository.appSettings.value
+        val settings = settingsSnapshot()
         val enabled = (settings?.floatingModeEnabled ?: DEFAULT_FLOATING_MODE_ENABLED).toBool()
         return enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     }
 
     internal fun isPersistentFloatingEnabled(): Boolean {
         if (!isFloatingModeEnabled()) return false
-        val app = application as ThumbkeyApplication
-        val settings = app.appSettingsRepository.appSettings.value
+        val settings = settingsSnapshot()
         return (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()
     }
 
@@ -83,7 +90,7 @@ class IMEService :
     internal fun onFlingDismiss() {
         floatingController.hideFloating()
         val app = application as ThumbkeyApplication
-        val settings = app.appSettingsRepository.appSettings.value
+        val settings = settingsSnapshot()
         val isPersistent = (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()
         app.appSettingsRepository.updateOtherSettings(
             OtherSettingsUpdate(
@@ -110,7 +117,7 @@ class IMEService :
     /** Explicitly disable floating and show docked view for emoji/clipboard. */
     internal fun disableFloatingForDocking() {
         val app = application as ThumbkeyApplication
-        val settings = app.appSettingsRepository.appSettings.value
+        val settings = settingsSnapshot()
         app.appSettingsRepository.updateOtherSettings(
             OtherSettingsUpdate(
                 id = 1,
@@ -131,7 +138,7 @@ class IMEService :
     /** Explicitly re-enable floating after emoji/clipboard docking. */
     internal fun enableFloatingAfterDocking() {
         val app = application as ThumbkeyApplication
-        val settings = app.appSettingsRepository.appSettings.value
+        val settings = settingsSnapshot()
         app.appSettingsRepository.updateOtherSettings(
             OtherSettingsUpdate(
                 id = 1,
@@ -160,7 +167,7 @@ class IMEService :
 
     internal fun togglePersistentMode() {
         val app = application as ThumbkeyApplication
-        val settings = app.appSettingsRepository.appSettings.value
+        val settings = settingsSnapshot()
         val currentlyEnabled =
             (
                 settings?.persistentFloatingEnabled
@@ -183,8 +190,7 @@ class IMEService :
     }
 
     internal fun toggleFloatingMode() {
-        val app = application as ThumbkeyApplication
-        val settings = app.appSettingsRepository.appSettings.value
+        val settings = settingsSnapshot()
         val currentlyEnabled =
             (
                 settings?.floatingModeEnabled
@@ -204,7 +210,7 @@ class IMEService :
         auto: Boolean,
     ) {
         val app = application as ThumbkeyApplication
-        val settings = app.appSettingsRepository.appSettings.value
+        val settings = settingsSnapshot()
         app.appSettingsRepository.updateOtherSettings(
             OtherSettingsUpdate(
                 id = 1,
@@ -248,7 +254,7 @@ class IMEService :
         val initialMode = pendingDockedMode
         val forceDocked = pendingDockedMode != null
 
-        val layoutIndex = settingsRepo.appSettings.value?.keyboardLayout
+        val layoutIndex = settingsRepo.getSettingsSnapshot()?.keyboardLayout
         if (layoutIndex != null) {
             currentKeyboardDefinition = KeyboardLayout.entries[layoutIndex].keyboardDefinition
         }
@@ -298,6 +304,27 @@ class IMEService :
 
     override fun onWindowShown() {
         super.onWindowShown()
+        reconcileFloating()
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Rotation does not always produce window show/hide callbacks, so
+        // reconcile here too — otherwise an auto-floated overlay gets stuck
+        // (or orphaned next to a docked input view) across orientation changes.
+        reconcileFloating()
+    }
+
+    /**
+     * Single authority for overlay-vs-mode consistency. Called from
+     * [onWindowShown] and [onConfigurationChanged] so every lifecycle path
+     * converges: floating guarantees a correctly positioned overlay, docked
+     * guarantees none (an orphan overlay next to a docked input view is the
+     * two-keyboards bug). The emoji/clipboard docking flow owns its surface
+     * and is left alone.
+     */
+    internal fun reconcileFloating() {
+        if (shouldRevertToFloating || pendingDockedMode != null) return
         if (isFloatingModeEnabled()) {
             if (isAutoFloatLandscapeEnabled() &&
                 floatingController.autoFloated &&
@@ -309,9 +336,12 @@ class IMEService :
             }
             // Orientation changed or first show
             floatingController.refreshAfterWindowShown()
-        } else if (isAutoFloatLandscapeEnabled() && floatingController.currentOrientation() == 2) {
-            // Gboard "auto float in landscape" parity: enter floating automatically.
-            setFloatingEnabled(true, auto = true)
+        } else {
+            floatingController.hideFloating()
+            if (isAutoFloatLandscapeEnabled() && floatingController.currentOrientation() == 2) {
+                // Gboard "auto float in landscape" parity: enter floating automatically.
+                setFloatingEnabled(true, auto = true)
+            }
         }
     }
 
@@ -383,8 +413,7 @@ class IMEService :
     }
 
     override fun onEvaluateInputViewShown(): Boolean {
-        val settingsRepo = (application as ThumbkeyApplication).appSettingsRepository
-        val settings = settingsRepo.appSettings.getValue()
+        val settings = settingsSnapshot()
         val showOnScreenKeyboard =
             (settings?.showOnScreenKeyboard ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD).toBool()
         val persistentEnabled =

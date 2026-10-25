@@ -687,6 +687,9 @@ class AppSettingsRepository(
         appSettingsDao.updateOtherSettings(otherSettings)
     }
 
+    /** Synchronous snapshot for IME lifecycle decisions (no LiveData lag). */
+    fun getSettingsSnapshot(): AppSettings? = appSettingsDao.getSettingsSync()
+
     @WorkerThread
     suspend fun updateLastVersionCodeViewed(versionCode: Int) {
         appSettingsDao.updateLastVersionCode(versionCode)
