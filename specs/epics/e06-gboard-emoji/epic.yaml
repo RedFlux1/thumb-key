@@ -1,0 +1,45 @@
+# e06 — Gboard Emoji Parity for Thumb-Key
+# Created 2026-10-26
+# Source: REA static analysis of Gboard 18.4.4.985164140 (arm64-v8a) via JADX 0.7.1
+# APK SHA256: 2a3f05f2f07bde6253fae35e95fe568409395a7b3eb6ad93b22573e8150aa9ee
+
+id: e06
+title: "Gboard Emoji Parity"
+bcps: 14
+stories: 3
+wsjf: high
+status: planned
+
+goal: >
+  Replace the androidx.emoji2 AndroidView picker (which crashes in floating
+  overlays via SubcomposeLayout) with a pure-Compose Gboard-inspired emoji
+  system: category header + body grid (HEADER/BODY split), normalized keyword
+  search with 1-entry Pair cache (mirrors EmojiSearchJniImpl/nativeSearch
+  without JNI), MRU recents, and commit-on-tap. No native libs, no downloads,
+  no Kitchen. Preserve custom emoji layout bottom-row behavior and the
+  ToggleEmojiMode/KeyboardMode.EMOJI contract.
+
+non_goals:
+  - Emoji Kitchen mixer/stickers (deferred follow-up epic)
+  - Native JNI search lib, proto schemas, per-locale downloads (Gboard
+    nativeLoadData/nativeSearch, Superpacks/MDD, ContentDownloadWorker)
+  - Cloud backup, metrics, federated learning
+  - Custom Bitmap rendering pipeline (system emoji font via Compose Text)
+
+gboard_reference:
+  package: com.google.android.inputmethod.latin
+  version: 18.4.4.985164140-release-arm64-v8a
+  picker_keyboards:
+    - com.google.android.apps.inputmethod.libs.search.emoji.standard.EmojiPickerKeyboard
+    - com.google.android.apps.inputmethod.libs.search.emoji.search.EmojiSearchResultKeyboard
+  holders:
+    - com.google.android.libraries.inputmethod.emoji.widget.FixedSizeEmojiListHolder
+    - com.google.android.libraries.inputmethod.emoji.widget.PageableEmojiListHolderView
+  render: com.google.android.libraries.inputmethod.emoji.view.EmojiView (Bitmap nzr holder, onDraw center/scale)
+  search: com.google.android.apps.inputmethod.libs.expression.emojisearch.EmojiSearchJniImpl
+  search_native: "emoji (NativeLibHelper.c), nativeInit/nativeLoadData(Object[])/nativeSearch(byte[]):byte[]/nativeUnloadData"
+  search_flow: "jab filter: lowerCase(US)->trim->whitespace-collapse, yrc proto request -> nativeSearch -> yrd response, Pair<yrc,yrd> 1-entry cache"
+  kitchen: deferred (EmojiKitchenBrowseKeyboard, EmojiKitchenRankerJni)
+  assets_shipped:
+    - assets/emoji_en_us_20250115185814.zip
+    - assets/emoji_superpacks_manifest_20250115185814.json

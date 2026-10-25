@@ -35,8 +35,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.emoji2.emojipicker.EmojiPickerView
 import com.dessalines.thumbkey.IMEService
 import com.dessalines.thumbkey.R
 import com.dessalines.thumbkey.db.AppSettings
@@ -81,6 +79,8 @@ import com.dessalines.thumbkey.keyboards.EMOJI_BACK_KEY_ITEM
 import com.dessalines.thumbkey.keyboards.KB_EN_THUMBKEY_MAIN
 import com.dessalines.thumbkey.keyboards.NUMERIC_KEY_ITEM
 import com.dessalines.thumbkey.keyboards.RETURN_KEY_ITEM
+import com.dessalines.thumbkey.ui.components.keyboard.emoji.EmojiPicker
+import com.dessalines.thumbkey.ui.components.keyboard.emoji.EmojiRecentsStore
 import com.dessalines.thumbkey.utils.CircularDragAction
 import com.dessalines.thumbkey.utils.ColorVariant
 import com.dessalines.thumbkey.utils.FN_MODE_ON
@@ -286,6 +286,22 @@ fun KeyboardScreen(
 
         ctx.currentInputConnection.requestCursorUpdates(0)
 
+        val recentsStore = remember(ctx) { EmojiRecentsStore(ctx) }
+        var emojiRecents by remember { mutableStateOf(recentsStore.getRecents()) }
+        val view = LocalView.current
+        val audioManager = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val pickEmoji: (String) -> Unit = { emoji ->
+            if (vibrateOnTap) {
+                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+            }
+            if (soundOnTap) {
+                audioManager.playSoundEffect(AudioManager.FX_KEY_CLICK, .1f)
+            }
+            ctx.currentInputConnection.commitText(emoji, 1)
+            recentsStore.push(emoji)
+            emojiRecents = recentsStore.getRecents()
+        }
+
         Box(
             modifier =
                 Modifier
@@ -343,22 +359,9 @@ fun KeyboardScreen(
                                     },
                                 ).background(MaterialTheme.colorScheme.surface),
                     ) {
-                        val view = LocalView.current
-                        val audioManager = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                        AndroidView(
-                            factory = { context ->
-                                val emojiPicker = EmojiPickerView(context)
-                                emojiPicker.setOnEmojiPickedListener {
-                                    if (vibrateOnTap) {
-                                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                    }
-                                    if (soundOnTap) {
-                                        audioManager.playSoundEffect(AudioManager.FX_KEY_CLICK, .1f)
-                                    }
-                                    ctx.currentInputConnection.commitText(it.emoji, 1)
-                                }
-                                emojiPicker
-                            },
+                        EmojiPicker(
+                            onEmojiPicked = pickEmoji,
+                            recents = emojiRecents,
                             modifier = Modifier.fillMaxWidth().height(emojiPickerHeight),
                         )
                     }
@@ -557,26 +560,9 @@ fun KeyboardScreen(
                                     },
                                 ).background(MaterialTheme.colorScheme.surface),
                     ) {
-                        val view = LocalView.current
-                        val audioManager = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                        AndroidView(
-                            // Write the emoji to our text box when we tap one.
-                            factory = { context ->
-                                val emojiPicker = EmojiPickerView(context)
-                                emojiPicker.setOnEmojiPickedListener {
-                                    if (vibrateOnTap) {
-                                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                    }
-                                    if (soundOnTap) {
-                                        audioManager.playSoundEffect(AudioManager.FX_KEY_CLICK, .1f)
-                                    }
-                                    ctx.currentInputConnection.commitText(
-                                        it.emoji,
-                                        1,
-                                    )
-                                }
-                                emojiPicker
-                            },
+                        EmojiPicker(
+                            onEmojiPicked = pickEmoji,
+                            recents = emojiRecents,
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
