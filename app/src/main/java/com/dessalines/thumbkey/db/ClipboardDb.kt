@@ -103,6 +103,9 @@ interface ClipboardItemDao {
 
     @Query("SELECT * FROM ClipboardItem ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLatest(): ClipboardItem?
+
+    @Query("SELECT uri FROM ClipboardItem WHERE uri IS NOT NULL")
+    suspend fun getAllUris(): List<String>
 }
 
 val CLIPBOARD_MIGRATION_1_2 =

@@ -538,4 +538,6 @@ class IMEService :
     fun clipboardGetLastClip(): String? = clipboardManager?.getLastClip()
 
     suspend fun clipboardGetLastClipItem() = clipboardManager?.getLastClipItem()
+
+    fun clipboardSweepImages() = clipboardManager?.sweepOrphanImages()
 }

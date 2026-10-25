@@ -67,6 +67,9 @@ class ClipboardRepository(
     suspend fun getLatest(): ClipboardItem? = clipboardItemDao.getLatest()
 
     @WorkerThread
+    suspend fun getAllUris(): List<String> = clipboardItemDao.getAllUris()
+
+    @WorkerThread
     suspend fun togglePin(item: ClipboardItem) {
         clipboardItemDao.update(item.copy(isPinned = !item.isPinned))
     }

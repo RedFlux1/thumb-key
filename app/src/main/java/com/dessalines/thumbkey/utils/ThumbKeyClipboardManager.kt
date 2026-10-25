@@ -184,6 +184,23 @@ class ThumbKeyClipboardManager(
     fun clearExpired() {
         scope.launch {
             clipboardRepository.clearExpired()
+            sweepOrphanImages()
+        }
+    }
+
+    fun sweepOrphanImages() {
+        scope.launch {
+            try {
+                val referenced = clipboardRepository.getAllUris().toSet()
+                val dir = resolveClipboardImageDir(context)
+                dir.listFiles()?.forEach { file ->
+                    if (file.absolutePath !in referenced) {
+                        file.delete()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to sweep orphan clipboard images", e)
+            }
         }
     }
 

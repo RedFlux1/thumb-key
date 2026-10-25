@@ -769,6 +769,7 @@ fun KeyboardScreen(
             } else {
                 clipboardRepository?.clearAll()
             }
+            ctx.clipboardSweepImages()
         }
 
         Box(
@@ -846,6 +847,7 @@ fun KeyboardScreen(
                     onClearAll = {
                         scope.launch {
                             clipboardRepository?.clearUnpinned()
+                            ctx.clipboardSweepImages()
                         }
                     },
                     onGoToClipboardSettings = onGoToClipboardSettings,
