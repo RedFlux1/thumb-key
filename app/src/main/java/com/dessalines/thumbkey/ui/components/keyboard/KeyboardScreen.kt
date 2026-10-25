@@ -362,6 +362,8 @@ fun KeyboardScreen(
                         EmojiPicker(
                             onEmojiPicked = pickEmoji,
                             recents = emojiRecents,
+                            onExitEmoji = { mode = KeyboardMode.MAIN },
+                            vibrateOnTap = vibrateOnTap,
                             modifier = Modifier.fillMaxWidth().height(emojiPickerHeight),
                         )
                     }
@@ -563,6 +565,8 @@ fun KeyboardScreen(
                         EmojiPicker(
                             onEmojiPicked = pickEmoji,
                             recents = emojiRecents,
+                            onExitEmoji = { mode = KeyboardMode.MAIN },
+                            vibrateOnTap = vibrateOnTap,
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
