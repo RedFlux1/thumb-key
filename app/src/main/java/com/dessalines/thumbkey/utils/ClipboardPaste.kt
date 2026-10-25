@@ -1,6 +1,9 @@
 package com.dessalines.thumbkey.utils
 
+import android.content.ClipData
 import android.content.ClipDescription
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import android.view.inputmethod.InputConnection
@@ -60,8 +63,8 @@ private fun commitClipboardImage(
                 ClipDescription.compareMimeTypes(it, mime) || it == "*/*"
             } ?: false
         if (!supported) {
-            Log.d(TAG, "Editor does not support $mime")
-            return false
+            Log.d(TAG, "Editor does not advertise $mime; trying system paste fallback")
+            return fallbackSystemImagePaste(ime, ic, file, mime)
         }
         // Expose via internal file uri; commitContent grants temporary read permission.
         val contentUri =
@@ -79,6 +82,29 @@ private fun commitClipboardImage(
         InputConnectionCompat.commitContent(ic, editorInfo, info, 0, null)
     } catch (e: Exception) {
         Log.w(TAG, "Failed to commit clipboard image", e)
+        false
+    }
+}
+
+private fun fallbackSystemImagePaste(
+    ime: IMEService,
+    ic: InputConnection?,
+    file: File,
+    mime: String,
+): Boolean {
+    if (ic == null) return false
+    return try {
+        val contentUri =
+            androidx.core.content.FileProvider.getUriForFile(
+                ime,
+                "${ime.packageName}.fileprovider",
+                file,
+            )
+        val cm = ime.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        cm.setPrimaryClip(ClipData.newUri(ime.contentResolver, "image", contentUri))
+        ic.performContextMenuAction(android.R.id.paste)
+    } catch (e: Exception) {
+        Log.w(TAG, "System image paste fallback failed", e)
         false
     }
 }

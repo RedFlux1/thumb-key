@@ -144,6 +144,10 @@ class ThumbKeyClipboardManager(
                 // Image-only clip: copy into internal storage (Gboard fmn.b parity).
                 try {
                     val sourceUri = clip.getItemAt(0).uri
+                    // Ignore our own FileProvider shares (system-paste fallback) to avoid loops.
+                    if (sourceUri != null && sourceUri.authority == "${context.packageName}.fileprovider") {
+                        return@OnPrimaryClipChangedListener
+                    }
                     if (sourceUri != null && sourceUri.toString().startsWith("content://")) {
                         val internalPath =
                             saveClipboardImageToInternal(context, sourceUri, timestamp, imageMime)
