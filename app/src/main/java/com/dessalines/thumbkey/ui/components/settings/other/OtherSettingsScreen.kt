@@ -270,21 +270,6 @@ fun OtherSettingsScreen(
                                 )
                             },
                         )
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment =
-                                androidx.compose.ui.Alignment.CenterVertically,
-                        ) {
-                            Spacer(modifier = Modifier.weight(1f))
-                            androidx.compose.material3.TextButton(
-                                onClick = { app.floatingModeRepository.resetDockHint() },
-                            ) {
-                                Text(stringResource(R.string.floating_reset_dock_hint))
-                            }
-                        }
                     }
                 }
             }

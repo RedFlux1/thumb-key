@@ -30,9 +30,6 @@ class FloatingKeyboardController(
     companion object {
         /** Down-fling velocity that dismisses floating (px/s, kept from e01). */
         const val FLING_DISMISS_VELOCITY_Y = 2500f
-
-        /** Downward drag distance that arms the dock target (px). */
-        const val DOCK_ARM_DISTANCE_PX = 320f
     }
 
     private val windowManager by lazy { ime.getSystemService(Context.WINDOW_SERVICE) as WindowManager }
@@ -137,12 +134,6 @@ class FloatingKeyboardController(
             y = params.y,
         )
     }
-
-    fun markDockHintShown() = repo().markDockHintShown()
-
-    fun isDockHintShown(): Boolean = repo().isDockHintShown()
-
-    fun resetDockHint() = repo().resetDockHint()
 
     private fun getStatusBarHeight(): Int {
         val resourceId = ime.resources.getIdentifier("status_bar_height", "dimen", "android")

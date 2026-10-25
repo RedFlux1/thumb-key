@@ -71,8 +71,6 @@ class IMEService :
         return app.floatingModeRepository.isAutoFloatLandscape()
     }
 
-    internal fun isDockHintShown(): Boolean = floatingController.isDockHintShown()
-
     internal fun showFloating() = floatingController.enterFloating()
 
     internal fun onDrag(
@@ -84,7 +82,6 @@ class IMEService :
 
     internal fun onFlingDismiss() {
         floatingController.hideFloating()
-        floatingController.markDockHintShown()
         val app = application as ThumbkeyApplication
         val settings = app.appSettingsRepository.appSettings.value
         val isPersistent = (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()

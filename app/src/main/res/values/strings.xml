@@ -158,8 +158,6 @@
     <string name="persistent_floating_mode_description">Keyboard stays visible even without a text field. Dismiss with a fling-down on the drag handle. Useful for keyboard shortcuts and navigation.</string>
     <!-- Gboard-parity floating -->
     <string name="floating_drag_handle">Drag handle</string>
-    <string name="floating_dock_hint">Drag here to exit floating mode</string>
     <string name="floating_auto_landscape">Auto float in landscape</string>
     <string name="floating_auto_landscape_description">Automatically switch to floating keyboard in landscape, like Gboard.</string>
-    <string name="floating_reset_dock_hint">Show dock hint again</string>
 </resources>

@@ -605,21 +605,6 @@ class FloatingModeRepository(
         val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
         dao.upsert(config.copy(autoFloatLandscape = if (enabled) 1 else 0))
     }
-
-    fun isDockHintShown(): Boolean {
-        val config = dao.getConfig(1)
-        return config?.dockHintShown == 1
-    }
-
-    fun markDockHintShown() {
-        val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
-        dao.upsert(config.copy(dockHintShown = 1))
-    }
-
-    fun resetDockHint() {
-        val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
-        dao.upsert(config.copy(dockHintShown = 0))
-    }
 }
 
 @Dao

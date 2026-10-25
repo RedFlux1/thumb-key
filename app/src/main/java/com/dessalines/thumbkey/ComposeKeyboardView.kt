@@ -4,14 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -22,7 +19,6 @@ import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -180,10 +176,9 @@ class ComposeKeyboardView(
 /**
  * Gboard-parity floating chrome.
  *
- * - Top drag handle moves the overlay (velocity-tracked, fling-down or
- *   drag-onto-dock dismisses, like `WidgetDragToMoveMotionEventHandler`).
- * - Bottom dock target appears while dragging ("Drag here to exit floating
- *   mode", Gboard `floating_keyboard_dock_hint` parity).
+ * Top drag handle moves the overlay (velocity-tracked, fling-down dismisses,
+ * like `WidgetDragToMoveMotionEventHandler`). Dismiss returns to docked mode,
+ * or hides the IME when persistent mode is on.
  */
 @Composable
 private fun FloatingKeyboardChrome(
@@ -192,11 +187,6 @@ private fun FloatingKeyboardChrome(
     isPersistent: Boolean,
     keyboardContent: @Composable () -> Unit,
 ) {
-    var dragging by remember { mutableStateOf(false) }
-    var dockArmed by remember { mutableStateOf(false) }
-    val dockArmPx =
-        with(LocalDensity.current) { 96.dp.toPx() }
-
     Box(
         contentAlignment = Alignment.Center,
     ) {
@@ -214,9 +204,7 @@ private fun FloatingKeyboardChrome(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            // Drag handle: drag to reposition, fling-down or
-                            // drag onto the dock bar to dismiss.
-                            var totalDy by remember { mutableStateOf(0f) }
+                            // Drag handle: drag to reposition, fling-down to dismiss.
                             Box(
                                 modifier =
                                     Modifier
@@ -227,35 +215,22 @@ private fun FloatingKeyboardChrome(
                                             detectDragGestures(
                                                 onDragStart = {
                                                     velocityTracker.resetTracking()
-                                                    totalDy = 0f
-                                                    dragging = true
-                                                    dockArmed = false
                                                 },
                                                 onDragEnd = {
                                                     val velocity = velocityTracker.calculateVelocity()
-                                                    dragging = false
-                                                    if (velocity.y > FloatingKeyboardController.FLING_DISMISS_VELOCITY_Y ||
-                                                        dockArmed
-                                                    ) {
+                                                    if (velocity.y > FloatingKeyboardController.FLING_DISMISS_VELOCITY_Y) {
                                                         ctx.onFlingDismiss()
                                                     } else {
                                                         ctx.onDragEnd()
                                                     }
-                                                    dockArmed = false
                                                 },
-                                                onDragCancel = {
-                                                    dragging = false
-                                                    dockArmed = false
-                                                    ctx.onDragEnd()
-                                                },
+                                                onDragCancel = { ctx.onDragEnd() },
                                                 onDrag = { change, dragAmount ->
                                                     change.consume()
                                                     velocityTracker.addPosition(
                                                         change.uptimeMillis,
                                                         change.position,
                                                     )
-                                                    totalDy += dragAmount.y
-                                                    dockArmed = totalDy > dockArmPx
                                                     ctx.onDrag(dragAmount.x, dragAmount.y)
                                                 },
                                             )
@@ -279,17 +254,6 @@ private fun FloatingKeyboardChrome(
                                 }
                             }
                             keyboardContent()
-                            // Gboard dock-hint parity: drop target shown while dragging.
-                            if (dragging) {
-                                DockTarget(armed = dockArmed)
-                            } else if (!remember { ctx.isDockHintShown() }) {
-                                Text(
-                                    text = stringResource(R.string.floating_dock_hint),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 4.dp),
-                                )
-                            }
                         }
                     }
 
@@ -306,36 +270,5 @@ private fun FloatingKeyboardChrome(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun DockTarget(armed: Boolean) {
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 4.dp)
-                .background(
-                    color =
-                        if (armed) {
-                            MaterialTheme.colorScheme.primaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        },
-                    shape = RoundedCornerShape(8.dp),
-                ).padding(vertical = 8.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.floating_dock_hint),
-            style = MaterialTheme.typography.labelMedium,
-            color =
-                if (armed) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-        )
     }
 }
