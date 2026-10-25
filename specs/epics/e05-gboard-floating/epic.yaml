@@ -1,0 +1,42 @@
+# epic.yaml — e05 Gboard Floating Keyboard Fork
+# Replaces e01/e02 overlay solution with Gboard-parity floating mode.
+
+epic_id: e05
+title: "Gboard Floating Keyboard Fork"
+version: "1.0.0"
+status: planned
+bcps_total: 14
+
+background: >
+  REA static analysis of Gboard 18.4.4 (com.google.android.inputmethod.latin)
+  shows floating mode as an AccessoryInputModeManager state
+  (defpackage.mjz.y / switchToFloatingKeyboardMode), not a separate Activity.
+  UI is a capped overlay (WidgetSoftKeyboardView a/b max size, onMeasure scale g,
+  r() recompute), drag-to-move with velocity (WidgetDragToMoveMotionEventHandler.g,
+  njt.a/b), ConstraintSet-based rescale (ScaledKeyboardViewInner.d/b/c),
+  8 edge/corner resize handles, drag-to-dock hint, and auto-float in landscape.
+  Thumb-Key e01/e02 implements a simpler overlay: drag + fling-dismiss only,
+  width-fraction cap, no scale/resize, no dock target, no auto-float.
+
+stories:
+  - id: e05s01
+    title: "Floating controller foundation — move physics + lifecycle"
+    bcps: 5
+    status: planned
+  - id: e05s02
+    title: "Resize + scale + dock hint"
+    bcps: 5
+    status: planned
+  - id: e05s03
+    title: "Auto-float landscape + settings replace + persistent rewire"
+    bcps: 4
+    status: planned
+
+replace_scope:
+  - "IMEService floating overlay block (showFloating/onDrag/onDragEnd/onFlingDismiss/hideFloating)"
+  - "ComposeKeyboardView floating chrome (drag handle box + SubcomposeLayout cap)"
+  - "FloatingModeConfig position-only schema (extend, do not drop table)"
+keep:
+  - "persistent sub-mode semantics (e02s01/s02/s03 behavior)"
+  - "opacity + expand-in-floating + per-orientation position memory"
+  - "TYPE_APPLICATION_OVERLAY + FLAG_NOT_TOUCH_MODAL window model"

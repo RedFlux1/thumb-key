@@ -354,6 +354,24 @@ val MIGRATION_31_32 =
         }
     }
 
+val MIGRATION_33_34 =
+    object : Migration(33, 34) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE FloatingModeConfig ADD COLUMN scale_x REAL NOT NULL DEFAULT 1.0",
+            )
+            db.execSQL(
+                "ALTER TABLE FloatingModeConfig ADD COLUMN scale_y REAL NOT NULL DEFAULT 1.0",
+            )
+            db.execSQL(
+                "ALTER TABLE FloatingModeConfig ADD COLUMN auto_float_landscape INTEGER NOT NULL DEFAULT 0",
+            )
+            db.execSQL(
+                "ALTER TABLE FloatingModeConfig ADD COLUMN dock_hint_shown INTEGER NOT NULL DEFAULT 0",
+            )
+        }
+    }
+
 val MIGRATION_32_33 =
     object : Migration(32, 33) {
         override fun migrate(db: SupportSQLiteDatabase) {

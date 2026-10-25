@@ -156,4 +156,19 @@
     <string name="floating_expand_in_floating_description">Keep emoji and clipboard views inside the floating window instead of temporarily docking</string>
     <string name="persistent_floating_mode">Keep keyboard visible</string>
     <string name="persistent_floating_mode_description">Keyboard stays visible even without a text field. Dismiss with a fling-down on the drag handle. Useful for keyboard shortcuts and navigation.</string>
+    <!-- Gboard-parity floating -->
+    <string name="floating_drag_handle">Drag handle</string>
+    <string name="floating_dock_hint">Drag here to exit floating mode</string>
+    <string name="floating_scale">Floating size</string>
+    <string name="floating_auto_landscape">Auto float in landscape</string>
+    <string name="floating_auto_landscape_description">Automatically switch to floating keyboard in landscape, like Gboard.</string>
+    <string name="floating_reset_dock_hint">Show dock hint again</string>
+    <string name="resize_top">Resize keyboard on the top edge</string>
+    <string name="resize_bottom">Resize keyboard on the bottom edge</string>
+    <string name="resize_left">Resize keyboard on the left edge</string>
+    <string name="resize_right">Resize keyboard on the right edge</string>
+    <string name="resize_top_left">Resize keyboard on the top left corner</string>
+    <string name="resize_top_right">Resize keyboard on the top right corner</string>
+    <string name="resize_bottom_left">Resize keyboard on the bottom left corner</string>
+    <string name="resize_bottom_right">Resize keyboard on the bottom right corner</string>
 </resources>

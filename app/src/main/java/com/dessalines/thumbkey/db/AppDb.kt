@@ -553,6 +553,10 @@ class FloatingModeRepository(
                 opacity = existing?.opacity ?: 100,
                 expandInFloating = existing?.expandInFloating ?: 0,
                 maxWidthFraction = existing?.maxWidthFraction ?: 60,
+                scaleX = existing?.scaleX ?: 1.0f,
+                scaleY = existing?.scaleY ?: 1.0f,
+                autoFloatLandscape = existing?.autoFloatLandscape ?: 0,
+                dockHintShown = existing?.dockHintShown ?: 0,
             )
         dao.upsert(config)
     }
@@ -590,6 +594,59 @@ class FloatingModeRepository(
     fun setMaxWidthFraction(fraction: Int) {
         val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
         dao.upsert(config.copy(maxWidthFraction = fraction))
+    }
+
+    fun getScale(orientation: Int): Pair<Float, Float> {
+        val config = dao.getConfig(orientation) ?: dao.getConfig(1)
+        return (config?.scaleX ?: 1.0f) to (config?.scaleY ?: 1.0f)
+    }
+
+    /** Uniform scale shown in settings (orientation-independent). */
+    fun getUniformScale(): Float {
+        val config = dao.getConfig(1) ?: dao.getConfig(2)
+        return config?.scaleX ?: 1.0f
+    }
+
+    fun setUniformScale(scale: Float) {
+        for (orientation in listOf(1, 2)) {
+            val base = dao.getConfig(orientation) ?: FloatingModeConfig(orientation = orientation, x = 100, y = 200)
+            dao.upsert(base.copy(scaleX = scale, scaleY = scale))
+        }
+    }
+
+    fun saveScale(
+        orientation: Int,
+        scaleX: Float,
+        scaleY: Float,
+    ) {
+        val existing = dao.getConfig(orientation)
+        val base = existing ?: FloatingModeConfig(orientation = orientation, x = 100, y = 200)
+        dao.upsert(base.copy(scaleX = scaleX, scaleY = scaleY))
+    }
+
+    fun isAutoFloatLandscape(): Boolean {
+        val config = dao.getConfig(1)
+        return config?.autoFloatLandscape == 1
+    }
+
+    fun setAutoFloatLandscape(enabled: Boolean) {
+        val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
+        dao.upsert(config.copy(autoFloatLandscape = if (enabled) 1 else 0))
+    }
+
+    fun isDockHintShown(): Boolean {
+        val config = dao.getConfig(1)
+        return config?.dockHintShown == 1
+    }
+
+    fun markDockHintShown() {
+        val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
+        dao.upsert(config.copy(dockHintShown = 1))
+    }
+
+    fun resetDockHint() {
+        val config = dao.getConfig(1) ?: FloatingModeConfig(orientation = 1, x = 100, y = 200)
+        dao.upsert(config.copy(dockHintShown = 0))
     }
 }
 
@@ -696,7 +753,7 @@ class AppSettingsRepository(
 }
 
 @Database(
-    version = 33,
+    version = 34,
     entities = [AppSettings::class, FloatingModeConfig::class],
     exportSchema = true,
 )
@@ -721,6 +778,7 @@ abstract class AppDB : RoomDatabase() {
                             "thumbkey",
                         ).allowMainThreadQueries()
                         .addMigrations(
+                            MIGRATION_33_34,
                             MIGRATION_32_33,
                             MIGRATION_30_31,
                             MIGRATION_29_30,

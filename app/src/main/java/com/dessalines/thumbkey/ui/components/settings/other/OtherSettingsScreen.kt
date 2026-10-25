@@ -79,6 +79,8 @@ fun OtherSettingsScreen(
     var opacityValue by remember { mutableFloatStateOf(app.floatingModeRepository.getOpacity().toFloat()) }
     var expandInFloating by remember { mutableStateOf(app.floatingModeRepository.isExpandInFloating()) }
     var maxWidthFraction by remember { mutableFloatStateOf(app.floatingModeRepository.getMaxWidthFraction().toFloat()) }
+    var scaleValue by remember { mutableFloatStateOf(app.floatingModeRepository.getUniformScale() * 100f) }
+    var autoFloatLandscape by remember { mutableStateOf(app.floatingModeRepository.isAutoFloatLandscape()) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState()
 
@@ -249,6 +251,71 @@ fun OtherSettingsScreen(
                                 valueRange = 30f..100f,
                                 modifier = Modifier.weight(1f),
                             )
+                        }
+                        Row(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                            verticalAlignment =
+                                androidx.compose.ui.Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.OpenInFull,
+                                contentDescription = stringResource(R.string.floating_scale),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "${scaleValue.toInt()}%",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Slider(
+                                value = scaleValue,
+                                onValueChange = { scaleValue = it },
+                                onValueChangeFinished = {
+                                    app.floatingModeRepository.setUniformScale(
+                                        (scaleValue / 100f).coerceIn(0.5f, 2.0f),
+                                    )
+                                },
+                                valueRange = 50f..200f,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        SwitchPreference(
+                            value = autoFloatLandscape,
+                            onValueChange = {
+                                autoFloatLandscape = it
+                                app.floatingModeRepository.setAutoFloatLandscape(it)
+                            },
+                            title = {
+                                Text(stringResource(R.string.floating_auto_landscape))
+                            },
+                            summary = {
+                                Text(stringResource(R.string.floating_auto_landscape_description))
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.OpenInFull,
+                                    contentDescription = null,
+                                )
+                            },
+                        )
+                        Row(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment =
+                                androidx.compose.ui.Alignment.CenterVertically,
+                        ) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            androidx.compose.material3.TextButton(
+                                onClick = { app.floatingModeRepository.resetDockHint() },
+                            ) {
+                                Text(stringResource(R.string.floating_reset_dock_hint))
+                            }
                         }
                     }
                 }

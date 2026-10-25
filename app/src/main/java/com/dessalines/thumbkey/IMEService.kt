@@ -1,15 +1,10 @@
 package com.dessalines.thumbkey
 
-import android.content.Context
-import android.graphics.PixelFormat
 import android.inputmethodservice.InputMethodService
 import android.inputmethodservice.InputMethodService.Insets
 import android.os.Build
 import android.util.Log
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
 import android.view.inputmethod.CursorAnchorInfo
 import android.view.inputmethod.EditorInfo
 import androidx.lifecycle.Lifecycle
@@ -43,9 +38,7 @@ class IMEService :
     LifecycleOwner,
     ViewModelStoreOwner,
     SavedStateRegistryOwner {
-    private val windowManager by lazy { getSystemService(Context.WINDOW_SERVICE) as WindowManager }
-    private var floatingView: ComposeKeyboardView? = null
-    private var floatingOrientation: Int = 0
+    internal val floatingController by lazy { FloatingKeyboardController(this) }
 
     internal fun isFloatingModeEnabled(): Boolean {
         val app = application as ThumbkeyApplication
@@ -72,104 +65,33 @@ class IMEService :
         return app.floatingModeRepository.getMaxWidthFraction()
     }
 
-    internal fun showFloating() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        if (floatingView != null) return
-
-        val view = setupView()
-
-        // Load saved position for current orientation
-        val orientation =
-            if (resources.configuration.orientation ==
-                android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            ) {
-                2
-            } else {
-                1
-            }
+    internal fun isAutoFloatLandscapeEnabled(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
         val app = application as ThumbkeyApplication
-        val saved = app.floatingModeRepository.loadPosition(orientation)
-        val opacity = app.floatingModeRepository.getOpacity()
-
-        val params =
-            WindowManager
-                .LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    PixelFormat.TRANSLUCENT,
-                ).apply {
-                    gravity = Gravity.TOP or Gravity.START
-                    x = saved?.first ?: 100
-                    y = saved?.second ?: 200
-                    alpha = opacity / 100f
-                }
-
-        try {
-            windowManager.addView(view, params)
-            floatingView = view
-            floatingOrientation = orientation
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to add floating view: $e")
-        }
+        return app.floatingModeRepository.isAutoFloatLandscape()
     }
+
+    internal fun floatingScale(): Pair<Float, Float> = floatingController.getScale()
+
+    internal fun isDockHintShown(): Boolean = floatingController.isDockHintShown()
+
+    internal fun saveFloatingScale(
+        scaleX: Float,
+        scaleY: Float,
+    ) = floatingController.saveScale(scaleX, scaleY)
+
+    internal fun showFloating() = floatingController.enterFloating()
 
     internal fun onDrag(
         dx: Float,
         dy: Float,
-    ) {
-        val view = floatingView ?: return
-        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
-        params.x += dx.toInt()
-        params.y += dy.toInt()
+    ) = floatingController.onDrag(dx, dy)
 
-        val displayMetrics = resources.displayMetrics
-        val screenWidth = displayMetrics.widthPixels
-        val screenHeight = displayMetrics.heightPixels
-
-        // Get status bar height to prevent keyboard from hiding behind it
-        val statusBarHeight = getStatusBarHeight()
-        val minY = statusBarHeight
-
-        params.x = params.x.coerceIn(0, (screenWidth - view.width).coerceAtLeast(0))
-        params.y = params.y.coerceIn(minY, (screenHeight - view.height).coerceAtLeast(minY))
-
-        try {
-            windowManager.updateViewLayout(view, params)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to update view layout on drag: $e")
-        }
-    }
-
-    private fun getStatusBarHeight(): Int {
-        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-        return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else 0
-    }
-
-    internal fun onDragEnd() {
-        val view = floatingView ?: return
-        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
-        val orientation =
-            if (resources.configuration.orientation ==
-                android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            ) {
-                2
-            } else {
-                1
-            }
-        val app = application as ThumbkeyApplication
-        app.floatingModeRepository.savePosition(
-            orientation = orientation,
-            x = params.x,
-            y = params.y,
-        )
-    }
+    internal fun onDragEnd() = floatingController.onDragEnd()
 
     internal fun onFlingDismiss() {
-        hideFloating()
+        floatingController.hideFloating()
+        floatingController.markDockHintShown()
         val app = application as ThumbkeyApplication
         val settings = app.appSettingsRepository.appSettings.value
         val isPersistent = (settings?.persistentFloatingEnabled ?: DEFAULT_PERSISTENT_FLOATING_ENABLED).toBool()
@@ -190,16 +112,7 @@ class IMEService :
         }
     }
 
-    private fun hideFloating() {
-        floatingView?.let { view ->
-            try {
-                windowManager.removeView(view)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error removing floating view: $e")
-            }
-        }
-        floatingView = null
-    }
+    internal fun hideFloating() = floatingController.hideFloating()
 
     internal var shouldRevertToFloating = false
     internal var pendingDockedMode: KeyboardMode? = null
@@ -288,24 +201,35 @@ class IMEService :
                     ?: DEFAULT_FLOATING_MODE_ENABLED
             ).toBool()
 
-        val newEnabled = if (currentlyEnabled) 0 else 1
+        setFloatingEnabled(!currentlyEnabled, auto = false)
+    }
+
+    /**
+     * Shared floating on/off switch. Gboard auto-float parity: [auto] marks
+     * controller-entered sessions so rotation back to portrait can restore
+     * docked mode without overriding an explicit user toggle.
+     */
+    internal fun setFloatingEnabled(
+        enabled: Boolean,
+        auto: Boolean,
+    ) {
+        val app = application as ThumbkeyApplication
+        val settings = app.appSettingsRepository.appSettings.value
         app.appSettingsRepository.updateOtherSettings(
             OtherSettingsUpdate(
                 id = 1,
                 showOnScreenKeyboard =
                     settings?.showOnScreenKeyboard
                         ?: DEFAULT_SHOW_ON_SCREEN_KEYBOARD,
-                floatingModeEnabled = newEnabled,
+                floatingModeEnabled = if (enabled) 1 else 0,
                 persistentFloatingEnabled =
                     settings?.persistentFloatingEnabled
                         ?: DEFAULT_PERSISTENT_FLOATING_ENABLED,
             ),
         )
 
-        if (currentlyEnabled) {
-            hideFloating()
-            setInputView(setupView())
-        } else {
+        if (enabled) {
+            floatingController.autoFloated = auto
             val dummyView =
                 object : View(this) {
                     override fun onMeasure(
@@ -319,10 +243,14 @@ class IMEService :
             // Force the IME window to recompute its size
             window?.window?.decorView?.requestApplyInsets()
             showFloating()
+        } else {
+            hideFloating()
+            floatingController.autoFloated = false
+            setInputView(setupView())
         }
     }
 
-    private fun setupView(): ComposeKeyboardView {
+    internal fun setupView(): ComposeKeyboardView {
         val app = application as ThumbkeyApplication
         val settingsRepo = app.appSettingsRepository
         val clipboardRepo = app.clipboardRepository
@@ -381,18 +309,19 @@ class IMEService :
     override fun onWindowShown() {
         super.onWindowShown()
         if (isFloatingModeEnabled()) {
-            val currentOrientation =
-                if (resources.configuration.orientation ==
-                    android.content.res.Configuration.ORIENTATION_LANDSCAPE
-                ) {
-                    2
-                } else {
-                    1
-                }
-            if (floatingView != null && floatingOrientation == currentOrientation) return
+            if (isAutoFloatLandscapeEnabled() &&
+                floatingController.autoFloated &&
+                floatingController.currentOrientation() == 1
+            ) {
+                // Auto-float session ended: rotation back to portrait restores docked.
+                setFloatingEnabled(false, auto = false)
+                return
+            }
             // Orientation changed or first show
-            hideFloating()
-            showFloating()
+            floatingController.refreshAfterWindowShown()
+        } else if (isAutoFloatLandscapeEnabled() && floatingController.currentOrientation() == 2) {
+            // Gboard "auto float in landscape" parity: enter floating automatically.
+            setFloatingEnabled(true, auto = true)
         }
     }
 

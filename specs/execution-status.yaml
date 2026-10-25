@@ -2,6 +2,12 @@
 # Auto-managed by bigpowers skills
 
 epics:
+  e05:
+    status: in_progress
+    stories:
+      e05s01: passing
+      e05s02: passing
+      e05s03: passing
   e03:
     status: done
     stories:

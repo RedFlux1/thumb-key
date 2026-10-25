@@ -1,0 +1,33 @@
+# e05-verify — Gboard floating keyboard fork verification evidence
+
+date: 2026-10-25
+branch: feat/gboard-floating-fork
+basis: REA static analysis of Gboard 18.4.4 (com.google.android.inputmethod.latin)
+
+gates:
+  - gate: assembleDebug
+    result: pass
+  - gate: formatKotlin
+    result: pass (one auto-fix in FloatingKeyboardController.kt)
+  - gate: lintKotlin
+    result: pass
+  - gate: lint
+    result: pass
+
+device_verification:
+  status: pending
+  notes: >
+    No test suite in repo and no emulator attached. Manual checklist:
+    drag moves + persists per orientation; corner resize scales both axes
+    0.5-2.0 and persists; edge resize scales one axis; fling-down and
+    dock-bar drop exit floating; auto-float enters in landscape and restores
+    docked in portrait; persistent sub-mode keeps overlay without focus;
+    settings scale/auto-float/dock-hint-reset persist across restart.
+
+rea_evidence:
+  - ev_e1fb6199225056a41ad135534e29295354e6232b (mjz.y switchToFloatingKeyboardMode)
+  - ev_51036b93d93bba5556f9ec8df531e9e87b218b7e82 (WidgetSoftKeyboardView.onLayout)
+  - ev_3951b3e75777cc05338edec7fd56dfdb022dec3d0a (WidgetSoftKeyboardView.onMeasure)
+  - ev_7e0251867d7cd1eb284e012008f6bb890a100fbaf (WidgetSoftKeyboardView.r)
+  - ev_382956ea24e47021c1a1768105d4a51c9a45e872 (ScaledKeyboardViewInner.onLayout)
+  - ev_5d438c655a5354e4cb7227c20ff5256354df397ab (ScaledKeyboardViewInner.d)

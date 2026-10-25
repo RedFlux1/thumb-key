@@ -5,6 +5,12 @@ version: "2.1.0"
 status: shipped
 
 epics:
+  - id: e05
+    title: "Gboard Floating Keyboard Fork"
+    bcps: 14
+    stories: 3
+    wsjf: high
+    status: in_progress
   - id: e03
     title: "Function Key Support"
     bcps: 8
