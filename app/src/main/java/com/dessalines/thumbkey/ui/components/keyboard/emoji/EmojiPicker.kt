@@ -109,12 +109,14 @@ fun EmojiPicker(
             listOf(
                 EmojiCategory.RECENTS,
                 EmojiCategory.SMILEYS,
-                EmojiCategory.GESTURES,
-                EmojiCategory.HEARTS,
+                EmojiCategory.PEOPLE,
                 EmojiCategory.NATURE,
                 EmojiCategory.FOOD,
+                EmojiCategory.TRAVEL,
+                EmojiCategory.ACTIVITY,
                 EmojiCategory.OBJECTS,
                 EmojiCategory.SYMBOLS,
+                EmojiCategory.FLAGS,
             )
         }
 
