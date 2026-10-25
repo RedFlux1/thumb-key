@@ -1,5 +1,21 @@
+## What's Changed in 5.3.0
+
+- feat(emoji): full original-view set, 1700 emoji in 9 categories
+- feat(emoji): always show Recents tab, size pad column to keys
+- feat(emoji): compact search bar and category chips
+- feat(emoji): search pad as standard KeyItemC strip like Nordic numeric extra column
+- feat(emoji): dynamic scaling, compact search, 4x1 search pad
+- feat(emoji): replace emoji2 AndroidView picker with pure-Compose Gboard-style system
+- fix(floating): reconcile overlay on rotation, sync mode reads
+- feat(floating): remove drag-here-to-exit dock target
+- feat(floating): drop resize, keep dock target and auto-float
+- feat(floating): gboard-parity floating keyboard fork
+
+**Full Changelog**: https://github.com/dessalines/thumb-key/compare/5.2.0...5.3.0
+
 ## What's Changed in 5.2.0
 
+- chore(release): 5.2.0 gboard clipboard parity
 - merge(feat): gboard clipboard parity into main
 - fix(clipboard): system paste fallback for image editors without commitContent support
 - chore(specs): mark e04 gboard-clipboard stories passing
