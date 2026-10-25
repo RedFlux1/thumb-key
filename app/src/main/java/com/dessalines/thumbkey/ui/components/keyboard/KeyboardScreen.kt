@@ -303,6 +303,8 @@ fun KeyboardScreen(
             recentsStore.push(emoji)
             emojiRecents = recentsStore.getRecents()
         }
+        // Pad column hugs the standard keys exactly: key outer width = keyWidth + padding.
+        val emojiPadWidth = (keyWidth + keyPadding * 2).dp
         val emojiSearchPad: @Composable () -> Unit = {
             EMOJI_SEARCH_PAD_KEYS.forEach { padKey ->
                 KeyboardKey(
@@ -526,6 +528,7 @@ fun KeyboardScreen(
                             query = emojiQuery,
                             onQueryChange = { emojiQuery = it },
                             searchPad = emojiSearchPad,
+                            padWidth = emojiPadWidth,
                             vibrateOnTap = vibrateOnTap,
                             modifier = Modifier.fillMaxWidth().height(emojiPickerHeight),
                         )
@@ -732,6 +735,7 @@ fun KeyboardScreen(
                             query = emojiQuery,
                             onQueryChange = { emojiQuery = it },
                             searchPad = emojiSearchPad,
+                            padWidth = emojiPadWidth,
                             vibrateOnTap = vibrateOnTap,
                             modifier =
                                 Modifier

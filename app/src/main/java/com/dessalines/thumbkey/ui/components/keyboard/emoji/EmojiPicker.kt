@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -85,6 +86,7 @@ fun EmojiPicker(
     query: String,
     onQueryChange: (String) -> Unit,
     searchPad: @Composable () -> Unit,
+    padWidth: Dp,
     vibrateOnTap: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -103,18 +105,17 @@ fun EmojiPicker(
     val showingSearch = normalizedQuery.isNotEmpty()
 
     val orderedCategories =
-        remember(recents) {
-            val base =
-                listOf(
-                    EmojiCategory.SMILEYS,
-                    EmojiCategory.GESTURES,
-                    EmojiCategory.HEARTS,
-                    EmojiCategory.NATURE,
-                    EmojiCategory.FOOD,
-                    EmojiCategory.OBJECTS,
-                    EmojiCategory.SYMBOLS,
-                )
-            if (recents.isEmpty()) base else listOf(EmojiCategory.RECENTS) + base
+        remember {
+            listOf(
+                EmojiCategory.RECENTS,
+                EmojiCategory.SMILEYS,
+                EmojiCategory.GESTURES,
+                EmojiCategory.HEARTS,
+                EmojiCategory.NATURE,
+                EmojiCategory.FOOD,
+                EmojiCategory.OBJECTS,
+                EmojiCategory.SYMBOLS,
+            )
         }
 
     val gridItems: List<String> =
@@ -125,7 +126,6 @@ fun EmojiPicker(
         }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val padWidth = 56.dp
         val gridWidth = maxWidth - padWidth
         val columns = ((gridWidth / 48.dp).toInt()).coerceIn(3, 8)
         val emojiFontSize = ((gridWidth / columns).value * 0.52f).sp
