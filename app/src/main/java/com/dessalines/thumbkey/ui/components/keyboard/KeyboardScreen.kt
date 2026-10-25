@@ -76,6 +76,7 @@ import com.dessalines.thumbkey.db.DEFAULT_VIBRATE_ON_SLIDE
 import com.dessalines.thumbkey.db.DEFAULT_VIBRATE_ON_TAP
 import com.dessalines.thumbkey.keyboards.BACKSPACE_KEY_ITEM
 import com.dessalines.thumbkey.keyboards.EMOJI_BACK_KEY_ITEM
+import com.dessalines.thumbkey.keyboards.EMOJI_SEARCH_PAD_KEYS
 import com.dessalines.thumbkey.keyboards.KB_EN_THUMBKEY_MAIN
 import com.dessalines.thumbkey.keyboards.NUMERIC_KEY_ITEM
 import com.dessalines.thumbkey.keyboards.RETURN_KEY_ITEM
@@ -288,6 +289,7 @@ fun KeyboardScreen(
 
         val recentsStore = remember(ctx) { EmojiRecentsStore(ctx) }
         var emojiRecents by remember { mutableStateOf(recentsStore.getRecents()) }
+        var emojiQuery by remember { mutableStateOf("") }
         val view = LocalView.current
         val audioManager = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val pickEmoji: (String) -> Unit = { emoji ->
@@ -300,6 +302,165 @@ fun KeyboardScreen(
             ctx.currentInputConnection.commitText(emoji, 1)
             recentsStore.push(emoji)
             emojiRecents = recentsStore.getRecents()
+        }
+        val emojiSearchPad: @Composable () -> Unit = {
+            EMOJI_SEARCH_PAD_KEYS.forEach { padKey ->
+                KeyboardKey(
+                    key = padKey,
+                    lastAction = lastAction,
+                    legendHeight = legendHeight,
+                    legendWidth = legendWidth,
+                    keyHeight = keyHeight,
+                    keyWidth = keyWidth,
+                    keyPadding = keyPadding,
+                    keyBorderWidth = keyBorderWidthFloat,
+                    keyRadius = cornerRadius,
+                    autoCapitalize = autoCapitalize,
+                    keyboardSettings = keyboardDefinition.settings,
+                    spacebarMultiTaps = spacebarMultiTaps,
+                    vibrateOnTap = vibrateOnTap,
+                    vibrateOnSlide = vibrateOnSlide,
+                    soundOnTap = soundOnTap,
+                    hideLetters = hideLetters,
+                    hideSymbols = hideSymbols,
+                    capsLock = capsLock,
+                    activeModifiers = activeModifiers,
+                    animationSpeed = settings?.animationSpeed ?: DEFAULT_ANIMATION_SPEED,
+                    animationHelperSpeed = settings?.animationHelperSpeed ?: DEFAULT_ANIMATION_HELPER_SPEED,
+                    minSwipeLength = settings?.minSwipeLength ?: DEFAULT_MIN_SWIPE_LENGTH,
+                    slideSensitivity = settings?.slideSensitivity ?: DEFAULT_SLIDE_SENSITIVITY,
+                    slideEnabled = slideEnabled,
+                    slideCursorMovementMode = slideCursorMovementMode,
+                    slideSpacebarDeadzoneEnabled = slideSpacebarDeadzoneEnabled,
+                    slideBackspaceDeadzoneEnabled = slideBackspaceDeadzoneEnabled,
+                    onToggleShiftMode = { enable ->
+                        mode =
+                            if (enable) {
+                                KeyboardMode.SHIFTED
+                            } else {
+                                capsLock = false
+                                KeyboardMode.MAIN
+                            }
+                    },
+                    onToggleCtrlMode = { enable ->
+                        if (enable) {
+                            if (activeModifiers and KeyEvent.META_CTRL_ON == 0) {
+                                activeModifiers = activeModifiers or KeyEvent.META_CTRL_ON
+                            } else if (modLocked and KeyEvent.META_CTRL_ON == 0) {
+                                modLocked = modLocked or KeyEvent.META_CTRL_ON
+                            } else {
+                                activeModifiers = activeModifiers and KeyEvent.META_CTRL_ON.inv()
+                                modLocked = modLocked and KeyEvent.META_CTRL_ON.inv()
+                            }
+                        } else {
+                            activeModifiers = activeModifiers and KeyEvent.META_CTRL_ON.inv()
+                            modLocked = modLocked and KeyEvent.META_CTRL_ON.inv()
+                        }
+                    },
+                    onToggleAltMode = { enable ->
+                        if (enable) {
+                            if (activeModifiers and KeyEvent.META_ALT_ON == 0) {
+                                activeModifiers = activeModifiers or KeyEvent.META_ALT_ON
+                            } else if (modLocked and KeyEvent.META_ALT_ON == 0) {
+                                modLocked = modLocked or KeyEvent.META_ALT_ON
+                            } else {
+                                activeModifiers = activeModifiers and KeyEvent.META_ALT_ON.inv()
+                                modLocked = modLocked and KeyEvent.META_ALT_ON.inv()
+                            }
+                        } else {
+                            activeModifiers = activeModifiers and KeyEvent.META_ALT_ON.inv()
+                            modLocked = modLocked and KeyEvent.META_ALT_ON.inv()
+                        }
+                    },
+                    onToggleMetaMode = { enable ->
+                        if (enable) {
+                            if (activeModifiers and META_META_ON == 0) {
+                                activeModifiers = activeModifiers or META_META_ON
+                            } else if (modLocked and META_META_ON == 0) {
+                                modLocked = modLocked or META_META_ON
+                            } else {
+                                activeModifiers = activeModifiers and META_META_ON.inv()
+                                modLocked = modLocked and META_META_ON.inv()
+                            }
+                        } else {
+                            activeModifiers = activeModifiers and META_META_ON.inv()
+                            modLocked = modLocked and META_META_ON.inv()
+                        }
+                    },
+                    onToggleFnMode = { enable ->
+                        if (enable) {
+                            if (activeModifiers and FN_MODE_ON == 0) {
+                                activeModifiers = activeModifiers or FN_MODE_ON
+                            } else if (modLocked and FN_MODE_ON == 0) {
+                                modLocked = modLocked or FN_MODE_ON
+                            } else {
+                                activeModifiers = activeModifiers and FN_MODE_ON.inv()
+                                modLocked = modLocked and FN_MODE_ON.inv()
+                            }
+                        } else {
+                            activeModifiers = activeModifiers and FN_MODE_ON.inv()
+                            modLocked = modLocked and FN_MODE_ON.inv()
+                        }
+                    },
+                    onToggleNumericMode = { enable ->
+                        mode =
+                            if (enable) {
+                                KeyboardMode.NUMERIC
+                            } else {
+                                capsLock = false
+                                KeyboardMode.MAIN
+                            }
+                    },
+                    onToggleEmojiMode = { enable ->
+                        mode =
+                            if (enable) {
+                                KeyboardMode.EMOJI
+                            } else {
+                                KeyboardMode.MAIN
+                            }
+                    },
+                    onToggleClipboardMode = { enable ->
+                        mode =
+                            if (enable) {
+                                KeyboardMode.CLIPBOARD
+                            } else {
+                                KeyboardMode.MAIN
+                            }
+                    },
+                    onEmojiSearchInput = { emojiQuery += it },
+                    onToggleCapsLock = {
+                        capsLock = !capsLock
+                        if (capsLock) {
+                            mode = KeyboardMode.SHIFTED
+                        }
+                    },
+                    onToggleHideLetters = onToggleHideLetters,
+                    onAutoCapitalize = { enable ->
+                        if (mode !== KeyboardMode.NUMERIC) {
+                            if (enable) {
+                                mode = KeyboardMode.SHIFTED
+                            } else if (!capsLock) {
+                                mode = KeyboardMode.MAIN
+                            }
+                        }
+                    },
+                    onSwitchLanguage = {
+                        onSwitchLanguage()
+                        mode = KeyboardMode.MAIN
+                    },
+                    onChangePosition = onChangePosition,
+                    onKeyEvent = {
+                        // Clear one-shot modifiers (keep locked ones and Shift)
+                        val locked = modLocked
+                        activeModifiers = (activeModifiers and KeyEvent.META_SHIFT_ON) or locked
+                    },
+                    dragReturnEnabled = dragReturnEnabled,
+                    circularDragEnabled = circularDragEnabled,
+                    clockwiseDragAction = clockwiseDragAction,
+                    counterclockwiseDragAction = counterclockwiseDragAction,
+                    slideHoldEnabled = slideHoldEnabled,
+                )
+            }
         }
 
         Box(
@@ -362,7 +523,9 @@ fun KeyboardScreen(
                         EmojiPicker(
                             onEmojiPicked = pickEmoji,
                             recents = emojiRecents,
-                            onExitEmoji = { mode = KeyboardMode.MAIN },
+                            query = emojiQuery,
+                            onQueryChange = { emojiQuery = it },
+                            searchPad = emojiSearchPad,
                             vibrateOnTap = vibrateOnTap,
                             modifier = Modifier.fillMaxWidth().height(emojiPickerHeight),
                         )
@@ -493,6 +656,7 @@ fun KeyboardScreen(
                                                 KeyboardMode.MAIN
                                             }
                                     },
+                                    onEmojiSearchInput = {},
                                     onToggleCapsLock = {
                                         capsLock = !capsLock
                                         if (capsLock) {
@@ -565,7 +729,9 @@ fun KeyboardScreen(
                         EmojiPicker(
                             onEmojiPicked = pickEmoji,
                             recents = emojiRecents,
-                            onExitEmoji = { mode = KeyboardMode.MAIN },
+                            query = emojiQuery,
+                            onQueryChange = { emojiQuery = it },
+                            searchPad = emojiSearchPad,
                             vibrateOnTap = vibrateOnTap,
                             modifier =
                                 Modifier
@@ -702,6 +868,7 @@ fun KeyboardScreen(
                                                 KeyboardMode.MAIN
                                             }
                                     },
+                                    onEmojiSearchInput = {},
                                     onToggleCapsLock = {
                                         capsLock = !capsLock
 
@@ -1062,6 +1229,7 @@ fun KeyboardScreen(
                                                     KeyboardMode.MAIN
                                                 }
                                         },
+                                        onEmojiSearchInput = {},
                                         onToggleCapsLock = {
                                             capsLock = !capsLock
 

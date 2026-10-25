@@ -404,6 +404,7 @@ fun performKeyAction(
     onToggleNumericMode: (enable: Boolean) -> Unit,
     onToggleEmojiMode: (enable: Boolean) -> Unit,
     onToggleClipboardMode: (enable: Boolean) -> Unit,
+    onEmojiSearchInput: (text: String) -> Unit,
     onToggleCapsLock: () -> Unit,
     onToggleHideLetters: () -> Unit,
     onAutoCapitalize: (enable: Boolean) -> Unit,
@@ -1456,6 +1457,10 @@ fun performKeyAction(
                 keyboardSettings.textProcessor?.handleFinishInput(ime)
                 onToggleClipboardMode(enable)
             }
+        }
+
+        is KeyAction.EmojiSearchInput -> {
+            onEmojiSearchInput(action.text)
         }
 
         KeyAction.GotoSettings -> {

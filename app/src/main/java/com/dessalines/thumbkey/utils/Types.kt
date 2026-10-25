@@ -237,6 +237,10 @@ sealed class KeyAction {
         val enable: Boolean,
     ) : KeyAction()
 
+    class EmojiSearchInput(
+        val text: String,
+    ) : KeyAction()
+
     class ComposeLastKey(
         val text: String,
     ) : KeyAction()

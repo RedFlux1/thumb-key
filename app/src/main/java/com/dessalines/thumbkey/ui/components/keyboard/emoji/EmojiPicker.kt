@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -39,11 +40,12 @@ import androidx.compose.ui.unit.sp
 fun EmojiPicker(
     onEmojiPicked: (String) -> Unit,
     recents: List<String>,
-    onExitEmoji: () -> Unit,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    searchPad: @Composable () -> Unit,
     vibrateOnTap: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf(EmojiCategory.SMILEYS) }
     val view = LocalView.current
 
@@ -93,9 +95,7 @@ fun EmojiPicker(
                     onValueChange = {},
                     readOnly = true,
                     placeholder = { Text("Search", fontSize = 13.sp) },
-                    textStyle =
-                        androidx.compose.ui.text
-                            .TextStyle(fontSize = 14.sp),
+                    textStyle = TextStyle(fontSize = 14.sp),
                     singleLine = true,
                     trailingIcon =
                         if (query.isNotEmpty()) {
@@ -104,7 +104,7 @@ fun EmojiPicker(
                                     if (vibrateOnTap) {
                                         view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                                     }
-                                    query = ""
+                                    onQueryChange("")
                                 }) {
                                     Icon(
                                         imageVector = Icons.Outlined.Close,
@@ -176,15 +176,14 @@ fun EmojiPicker(
                     }
                 }
             }
-            EmojiSearchPadSized(
-                query = query,
-                onQueryChange = { query = it },
-                onCommitTopResult = {
-                    results.firstOrNull()?.let { onEmojiPicked(it.emoji) }
-                },
-                onExitEmoji = onExitEmoji,
-                modifier = Modifier.width(padWidth).fillMaxHeight(),
-            )
+            Column(
+                modifier =
+                    Modifier
+                        .width(padWidth)
+                        .fillMaxHeight(),
+            ) {
+                searchPad()
+            }
         }
     }
 }
