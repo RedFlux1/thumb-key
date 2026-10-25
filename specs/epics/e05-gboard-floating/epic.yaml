@@ -24,8 +24,8 @@ stories:
     bcps: 5
     status: planned
   - id: e05s02
-    title: "Resize + scale + dock hint"
-    bcps: 5
+    title: "Dock target + dock hint (resize dropped)"
+    bcps: 2
     status: planned
   - id: e05s03
     title: "Auto-float landscape + settings replace + persistent rewire"

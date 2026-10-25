@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -184,9 +182,6 @@ class ComposeKeyboardView(
  *
  * - Top drag handle moves the overlay (velocity-tracked, fling-down or
  *   drag-onto-dock dismisses, like `WidgetDragToMoveMotionEventHandler`).
- * - 8 resize handles scale the keyboard (corners both axes, edges one axis),
- *   range 0.5-2.0 like Gboard's `WidgetSoftKeyboardView.s` /
- *   `ScaledKeyboardViewInner`.
  * - Bottom dock target appears while dragging ("Drag here to exit floating
  *   mode", Gboard `floating_keyboard_dock_hint` parity).
  */
@@ -197,29 +192,16 @@ private fun FloatingKeyboardChrome(
     isPersistent: Boolean,
     keyboardContent: @Composable () -> Unit,
 ) {
-    val initialScale = ctx.floatingScale()
-    var scaleX by remember { mutableStateOf(initialScale.first) }
-    var scaleY by remember { mutableStateOf(initialScale.second) }
-    var resizing by remember { mutableStateOf(false) }
     var dragging by remember { mutableStateOf(false) }
     var dockArmed by remember { mutableStateOf(false) }
     val dockArmPx =
         with(LocalDensity.current) { 96.dp.toPx() }
 
-    fun persistScale() = ctx.saveFloatingScale(scaleX, scaleY)
-
     Box(
         contentAlignment = Alignment.Center,
     ) {
         Surface(
-            modifier =
-                Modifier
-                    .widthIn(max = maxWidthDp)
-                    .graphicsLayer(
-                        scaleX = scaleX,
-                        scaleY = scaleY,
-                        alpha = if (resizing) 0.88f else 1f,
-                    ),
+            modifier = Modifier.widthIn(max = maxWidthDp),
             shape = RoundedCornerShape(12.dp),
             shadowElevation = 8.dp,
             color = MaterialTheme.colorScheme.background,
@@ -324,112 +306,6 @@ private fun FloatingKeyboardChrome(
                 }
             }
         }
-        // 8 Gboard-style resize handles around the keyboard bounds.
-        val step = 700f
-        ResizeHandle(
-            description = stringResource(R.string.resize_top_left),
-            modifier = Modifier.align(Alignment.TopStart).offset((-14).dp, (-14).dp),
-            onResize = { dx, dy ->
-                val d = ctx.floatingController.clampScale(scaleX + (dx + dy) / 2 / step)
-                scaleX = d
-                scaleY = ctx.floatingController.clampScale(scaleY + (dx + dy) / 2 / step)
-            },
-            onResizeEnd = {
-                resizing = false
-                persistScale()
-            },
-            onResizeStart = { resizing = true },
-        )
-        ResizeHandle(
-            description = stringResource(R.string.resize_top_right),
-            modifier = Modifier.align(Alignment.TopEnd).offset(14.dp, (-14).dp),
-            onResize = { dx, dy ->
-                val d = (-dx + dy) / 2 / step
-                scaleX = ctx.floatingController.clampScale(scaleX + d)
-                scaleY = ctx.floatingController.clampScale(scaleY + d)
-            },
-            onResizeEnd = {
-                resizing = false
-                persistScale()
-            },
-            onResizeStart = { resizing = true },
-        )
-        ResizeHandle(
-            description = stringResource(R.string.resize_bottom_left),
-            modifier = Modifier.align(Alignment.BottomStart).offset((-14).dp, 14.dp),
-            onResize = { dx, dy ->
-                val d = (dx - dy) / 2 / step
-                scaleX = ctx.floatingController.clampScale(scaleX + d)
-                scaleY = ctx.floatingController.clampScale(scaleY + d)
-            },
-            onResizeEnd = {
-                resizing = false
-                persistScale()
-            },
-            onResizeStart = { resizing = true },
-        )
-        ResizeHandle(
-            description = stringResource(R.string.resize_bottom_right),
-            modifier = Modifier.align(Alignment.BottomEnd).offset(14.dp, 14.dp),
-            onResize = { dx, dy ->
-                val d = (dx + dy) / 2 / step
-                scaleX = ctx.floatingController.clampScale(scaleX + d)
-                scaleY = ctx.floatingController.clampScale(scaleY + d)
-            },
-            onResizeEnd = {
-                resizing = false
-                persistScale()
-            },
-            onResizeStart = { resizing = true },
-        )
-        ResizeHandle(
-            description = stringResource(R.string.resize_left),
-            modifier = Modifier.align(Alignment.CenterStart).offset((-14).dp, 0.dp),
-            onResize = { dx, _ ->
-                scaleX = ctx.floatingController.clampScale(scaleX - dx / step)
-            },
-            onResizeEnd = {
-                resizing = false
-                persistScale()
-            },
-            onResizeStart = { resizing = true },
-        )
-        ResizeHandle(
-            description = stringResource(R.string.resize_right),
-            modifier = Modifier.align(Alignment.CenterEnd).offset(14.dp, 0.dp),
-            onResize = { dx, _ ->
-                scaleX = ctx.floatingController.clampScale(scaleX + dx / step)
-            },
-            onResizeEnd = {
-                resizing = false
-                persistScale()
-            },
-            onResizeStart = { resizing = true },
-        )
-        ResizeHandle(
-            description = stringResource(R.string.resize_top),
-            modifier = Modifier.align(Alignment.TopCenter).offset(0.dp, (-14).dp),
-            onResize = { _, dy ->
-                scaleY = ctx.floatingController.clampScale(scaleY - dy / step)
-            },
-            onResizeEnd = {
-                resizing = false
-                persistScale()
-            },
-            onResizeStart = { resizing = true },
-        )
-        ResizeHandle(
-            description = stringResource(R.string.resize_bottom),
-            modifier = Modifier.align(Alignment.BottomCenter).offset(0.dp, 14.dp),
-            onResize = { _, dy ->
-                scaleY = ctx.floatingController.clampScale(scaleY + dy / step)
-            },
-            onResizeEnd = {
-                resizing = false
-                persistScale()
-            },
-            onResizeStart = { resizing = true },
-        )
     }
 }
 
@@ -460,43 +336,6 @@ private fun DockTarget(armed: Boolean) {
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
-        )
-    }
-}
-
-@Composable
-private fun ResizeHandle(
-    description: String,
-    modifier: Modifier = Modifier,
-    onResizeStart: () -> Unit = {},
-    onResize: (dx: Float, dy: Float) -> Unit,
-    onResizeEnd: () -> Unit = {},
-) {
-    Box(
-        modifier =
-            modifier
-                .size(28.dp)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { onResizeStart() },
-                        onDragEnd = { onResizeEnd() },
-                        onDragCancel = { onResizeEnd() },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            onResize(dragAmount.x, dragAmount.y)
-                        },
-                    )
-                },
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(10.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        shape = RoundedCornerShape(2.dp),
-                    ),
         )
     }
 }

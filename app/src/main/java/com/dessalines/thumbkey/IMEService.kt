@@ -71,14 +71,7 @@ class IMEService :
         return app.floatingModeRepository.isAutoFloatLandscape()
     }
 
-    internal fun floatingScale(): Pair<Float, Float> = floatingController.getScale()
-
     internal fun isDockHintShown(): Boolean = floatingController.isDockHintShown()
-
-    internal fun saveFloatingScale(
-        scaleX: Float,
-        scaleY: Float,
-    ) = floatingController.saveScale(scaleX, scaleY)
 
     internal fun showFloating() = floatingController.enterFloating()
 

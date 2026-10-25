@@ -596,34 +596,6 @@ class FloatingModeRepository(
         dao.upsert(config.copy(maxWidthFraction = fraction))
     }
 
-    fun getScale(orientation: Int): Pair<Float, Float> {
-        val config = dao.getConfig(orientation) ?: dao.getConfig(1)
-        return (config?.scaleX ?: 1.0f) to (config?.scaleY ?: 1.0f)
-    }
-
-    /** Uniform scale shown in settings (orientation-independent). */
-    fun getUniformScale(): Float {
-        val config = dao.getConfig(1) ?: dao.getConfig(2)
-        return config?.scaleX ?: 1.0f
-    }
-
-    fun setUniformScale(scale: Float) {
-        for (orientation in listOf(1, 2)) {
-            val base = dao.getConfig(orientation) ?: FloatingModeConfig(orientation = orientation, x = 100, y = 200)
-            dao.upsert(base.copy(scaleX = scale, scaleY = scale))
-        }
-    }
-
-    fun saveScale(
-        orientation: Int,
-        scaleX: Float,
-        scaleY: Float,
-    ) {
-        val existing = dao.getConfig(orientation)
-        val base = existing ?: FloatingModeConfig(orientation = orientation, x = 100, y = 200)
-        dao.upsert(base.copy(scaleX = scaleX, scaleY = scaleY))
-    }
-
     fun isAutoFloatLandscape(): Boolean {
         val config = dao.getConfig(1)
         return config?.autoFloatLandscape == 1

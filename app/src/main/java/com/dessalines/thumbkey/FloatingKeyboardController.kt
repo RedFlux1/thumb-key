@@ -17,14 +17,9 @@ import com.dessalines.thumbkey.utils.TAG
  * - `AccessoryInputModeManager.switchToFloatingKeyboardMode` (defpackage.mjz.y)
  *   is a mode switch that builds a capped overlay plus a dismiss accessory
  *   (`close_accessory_floating_keyboard`), not a separate Activity.
- * - `WidgetSoftKeyboardView` caps content to a max size (fields a/b, recomputed
- *   in `r()` from screen size minus margins), applies a scale factor `g`
- *   (`s(f,f2)`, reset in `o()`), and fades children during scale (`j(f)`).
  * - `WidgetDragToMoveMotionEventHandler.g` tracks raw touch deltas with a
  *   `VelocityTracker` (1000 px/s unit) and moves via `njt.a(dx,dy)` /
  *   fling via `njt.b(vx,vy)`.
- * - `ScaledKeyboardViewInner.d/b/c` re-solves the layout (`ConstraintSet`)
- *   when the scale changes; resize range is 0.5-2.0.
  *
  * This controller owns all overlay window mechanics. [IMEService] keeps mode
  * toggles, DB writes, and IME lifecycle wiring.
@@ -35,10 +30,6 @@ class FloatingKeyboardController(
     companion object {
         /** Down-fling velocity that dismisses floating (px/s, kept from e01). */
         const val FLING_DISMISS_VELOCITY_Y = 2500f
-
-        /** Gboard float-range parity: scale multipliers stay within 0.5-2.0. */
-        const val MIN_SCALE = 0.5f
-        const val MAX_SCALE = 2.0f
 
         /** Downward drag distance that arms the dock target (px). */
         const val DOCK_ARM_DISTANCE_PX = 320f
@@ -146,21 +137,6 @@ class FloatingKeyboardController(
             y = params.y,
         )
     }
-
-    fun getScale(): Pair<Float, Float> = repo().getScale(currentOrientation())
-
-    fun saveScale(
-        scaleX: Float,
-        scaleY: Float,
-    ) {
-        repo().saveScale(
-            orientation = currentOrientation(),
-            scaleX = clampScale(scaleX),
-            scaleY = clampScale(scaleY),
-        )
-    }
-
-    fun clampScale(value: Float): Float = value.coerceIn(MIN_SCALE, MAX_SCALE)
 
     fun markDockHintShown() = repo().markDockHintShown()
 
