@@ -20,7 +20,9 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ContentPaste
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DeleteSweep
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -53,6 +55,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.dessalines.thumbkey.R
+import com.dessalines.thumbkey.db.CLIP_ITEM_TYPE_IMAGE
 import com.dessalines.thumbkey.db.ClipboardItem
 
 val spacing = 16.dp
@@ -353,9 +356,30 @@ private fun ClipboardItemRow(
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }
+                if (item.sensitive) {
+                    Icon(
+                        imageVector = Icons.Outlined.VisibilityOff,
+                        contentDescription = stringResource(R.string.clipboard_sensitive),
+                        modifier = Modifier.size(spacing),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (item.itemType == CLIP_ITEM_TYPE_IMAGE) {
+                    Icon(
+                        imageVector = Icons.Outlined.Image,
+                        contentDescription = null,
+                        modifier = Modifier.size(spacing),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
 
                 Text(
-                    text = item.text.replace("\n", " ").replace("\r", ""),
+                    text =
+                        if (item.itemType == CLIP_ITEM_TYPE_IMAGE) {
+                            item.uri?.substringAfterLast("/") ?: stringResource(R.string.clipboard_image)
+                        } else {
+                            item.text.replace("\n", " ").replace("\r", "")
+                        },
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 1,
                     overflow = TextOverflow.MiddleEllipsis,
@@ -372,7 +396,12 @@ private fun ClipboardItemRow(
                     )
 
                     Text(
-                        text = stringResource(R.string.clipboard_characters, item.text.length),
+                        text =
+                            when {
+                                item.itemType == CLIP_ITEM_TYPE_IMAGE -> stringResource(R.string.clipboard_image)
+                                !item.htmlText.isNullOrBlank() -> stringResource(R.string.clipboard_rich_text)
+                                else -> stringResource(R.string.clipboard_characters, item.text.length)
+                            },
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

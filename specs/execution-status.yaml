@@ -19,3 +19,10 @@ epics:
       e01s01: passing
       e01s02: passing
       e01s03: passing
+  e04:
+    status: in_progress
+    stories:
+      e04s01: passing
+      e04s02: passing
+      e04s03: passing
+      e04s04: passing

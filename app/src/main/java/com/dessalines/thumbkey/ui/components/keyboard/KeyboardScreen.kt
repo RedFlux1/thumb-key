@@ -91,10 +91,12 @@ import com.dessalines.thumbkey.utils.KeyboardPosition
 import com.dessalines.thumbkey.utils.META_META_ON
 import com.dessalines.thumbkey.utils.SlideType
 import com.dessalines.thumbkey.utils.TAG
+import com.dessalines.thumbkey.utils.deleteClipboardImageFile
 import com.dessalines.thumbkey.utils.getAutoKeyWidth
 import com.dessalines.thumbkey.utils.getKeyboardMode
 import com.dessalines.thumbkey.utils.getModifiedKeyboardDefinition
 import com.dessalines.thumbkey.utils.keyboardPositionToAlignment
+import com.dessalines.thumbkey.utils.pasteClipboardItem
 import com.dessalines.thumbkey.utils.toBool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -767,6 +769,7 @@ fun KeyboardScreen(
             } else {
                 clipboardRepository?.clearAll()
             }
+            ctx.clipboardSweepImages()
         }
 
         Box(
@@ -810,16 +813,21 @@ fun KeyboardScreen(
                     clipboardItems = clipboardItems,
                     isEnabled = clipboardHistoryEnabled,
                     onItemClick = { item ->
-                        // Paste and return to keyboard
-                        ctx.currentInputConnection.commitText(item.text, 1)
-                        mode = KeyboardMode.MAIN
+                        // Paste and return to keyboard (Gboard C() parity: image via commitContent)
+                        pasteClipboardItem(ctx, item, stayInClipboard = false) {
+                            mode = KeyboardMode.MAIN
+                        }
+                        if (item.text.isNotBlank() || item.uri == null) {
+                            mode = KeyboardMode.MAIN
+                        }
                     },
                     onItemPaste = { item ->
                         // Paste WITHOUT returning to keyboard
-                        ctx.currentInputConnection.commitText(item.text, 1)
+                        pasteClipboardItem(ctx, item, stayInClipboard = true)
                     },
                     onItemDelete = { item ->
                         scope.launch {
+                            deleteClipboardImageFile(item.uri)
                             clipboardRepository?.deleteItem(item)
                         }
                     },
@@ -839,6 +847,7 @@ fun KeyboardScreen(
                     onClearAll = {
                         scope.launch {
                             clipboardRepository?.clearUnpinned()
+                            ctx.clipboardSweepImages()
                         }
                     },
                     onGoToClipboardSettings = onGoToClipboardSettings,

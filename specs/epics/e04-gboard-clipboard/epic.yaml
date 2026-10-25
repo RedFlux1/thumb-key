@@ -1,0 +1,44 @@
+# e04 — Gboard Clipboard Parity for Thumb-Key
+# Created 2026-10-25
+# Source: REA static analysis of Gboard 18.4.4.985164140 (arm64-v8a) via JADX 0.7.1
+# APK SHA256: 2a3f05f2f07bde6253fae35e95fe568409395a7b3eb6ad93b22573e8150aa9ee
+
+id: e04
+title: "Gboard Clipboard Parity"
+bcps: 21
+stories: 4
+wsjf: high
+status: planned
+
+goal: >
+  Bring Thumb-Key clipboard history to Gboard parity while preserving
+  privacy posture: rich clips (html_text, images via uri), item_type /
+  entity_type metadata, sensitive flag (API33 IS_SENSITIVE), timestamp from
+  ClipDescription, UNIQUE(text,html,uri) dedupe, and a private non-exported
+  ContentProvider mirroring Gboard's clips table. Sensitive clips are saved
+  with sensitive=true and badged in UI (per user decision).
+
+non_goals:
+  - Screenshot-to-clipboard auto-ingest (Gboard q()/p() observer)
+  - BackupDataProviderModule / cloud backup
+  - Metrics pipeline (ClipboardMetricsProcessor)
+  - Federated learning / example-store integration
+
+gboard_reference:
+  package: com.google.android.inputmethod.latin
+  version: 18.4.4.985164140-release-arm64-v8a
+  provider: com.google.android.apps.inputmethod.libs.clipboard.ClipboardContentProvider
+  authority_suffix: .clipboard_content
+  uris: ["clips (dir, code 2)", "clips/# (item, code 1)"]
+  mime_item: vnd.android.cursor.item/clips
+  mime_dir: vnd.android.cursor.dir/clips
+  db: gboard_clipboard.db
+  db_version: 5
+  table: clips
+  schema: "(_id integer PK, text text, html_text text, item_type integer NOT NULL, entity_type integer NOT NULL, timestamp integer, sensitive bool, uri text, group_id integer, UNIQUE(text,html_text,uri) ON CONFLICT REPLACE)"
+  capture: "fmg ClipboardDataHandler implements OnPrimaryClipChangedListener, b(Context,ClipData,ClipDescription,bool)->fku"
+  paste_text: "fmx.d() via Consumer<oas>/pue commit"
+  paste_image: "fmx.i() mime negotiation image/jpeg|png|webp, EditorInfo content-mime check, fmn copy"
+  image_utils: "fmn ClipboardImageFileProviderUtils"
+  storage_iface: "fmq, concrete fml ClipboardExtension"
+  row_mapping: "fmb.c()->ContentValues, fmb.e()->fku, fmb.d()->Uri"

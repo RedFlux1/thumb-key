@@ -12,24 +12,62 @@ class ClipboardRepository(
 
     @WorkerThread
     suspend fun addItem(text: String) {
+        addItem(text = text)
+    }
+
+    @WorkerThread
+    suspend fun addItem(
+        text: String,
+        htmlText: String? = null,
+        itemType: Int = CLIP_ITEM_TYPE_TEXT,
+        entityType: Int = 0,
+        uri: String? = null,
+        sensitive: Boolean = false,
+        groupId: Int = 0,
+        timestamp: Long = System.currentTimeMillis(),
+    ) {
         val settings = appSettingsDao.getSettingsSync()
         if (settings?.clipboardHistoryEnabled?.toBool() != true) return
 
         clearExpired()
 
-        val existingItem = clipboardItemDao.findByText(text)
+        val existingItem = clipboardItemDao.findByUnique(text, htmlText, uri)
         if (existingItem != null) {
-            clipboardItemDao.update(existingItem.copy(timestamp = System.currentTimeMillis()))
+            clipboardItemDao.update(
+                existingItem.copy(
+                    timestamp = timestamp,
+                    itemType = itemType,
+                    entityType = entityType,
+                    sensitive = sensitive,
+                    groupId = groupId,
+                ),
+            )
             return
         }
 
-        val item = ClipboardItem(text = text)
+        val item =
+            ClipboardItem(
+                text = text,
+                htmlText = htmlText,
+                itemType = itemType,
+                entityType = entityType,
+                uri = uri,
+                sensitive = sensitive,
+                groupId = groupId,
+                timestamp = timestamp,
+            )
         clipboardItemDao.insert(item)
 
         if (settings.clipboardSizeLimitEnabled.toBool()) {
             enforceSizeLimit(settings.clipboardMaxSize)
         }
     }
+
+    @WorkerThread
+    suspend fun getLatest(): ClipboardItem? = clipboardItemDao.getLatest()
+
+    @WorkerThread
+    suspend fun getAllUris(): List<String> = clipboardItemDao.getAllUris()
 
     @WorkerThread
     suspend fun togglePin(item: ClipboardItem) {

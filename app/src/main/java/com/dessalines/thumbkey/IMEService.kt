@@ -536,4 +536,8 @@ class IMEService :
     fun clipboardWasLastCopyDoneViaSystem(): Boolean = clipboardManager?.wasLastCopyOperationDoneViaSystem() ?: true
 
     fun clipboardGetLastClip(): String? = clipboardManager?.getLastClip()
+
+    suspend fun clipboardGetLastClipItem() = clipboardManager?.getLastClipItem()
+
+    fun clipboardSweepImages() = clipboardManager?.sweepOrphanImages()
 }
