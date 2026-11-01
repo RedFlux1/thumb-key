@@ -1,33 +1,22 @@
 package com.dessalines.thumbkey.ui.components.keyboard.emoji
 
-import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,9 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -83,26 +69,9 @@ private fun CategoryChip(
 fun EmojiPicker(
     onEmojiPicked: (String) -> Unit,
     recents: List<String>,
-    query: String,
-    onQueryChange: (String) -> Unit,
-    searchPad: @Composable () -> Unit,
-    padWidth: Dp,
-    vibrateOnTap: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    var category by remember { mutableStateOf(EmojiCategory.SMILEYS) }
-    val view = LocalView.current
-
-    val normalizedQuery = remember(query) { EmojiSearchEngine.normalize(query) }
-    val results =
-        remember(normalizedQuery) {
-            if (normalizedQuery.isEmpty()) {
-                emptyList()
-            } else {
-                EmojiSearchEngine.search(normalizedQuery)
-            }
-        }
-    val showingSearch = normalizedQuery.isNotEmpty()
+    var category by remember { mutableStateOf(EmojiCategory.RECENTS) }
 
     val orderedCategories =
         remember {
@@ -121,140 +90,61 @@ fun EmojiPicker(
         }
 
     val gridItems: List<String> =
-        when {
-            showingSearch -> results.map { it.emoji }
-            category == EmojiCategory.RECENTS -> recents
-            else -> remember(category) { EmojiSearchEngine.emojisByCategory(category).map { it.emoji } }
+        if (category == EmojiCategory.RECENTS) {
+            recents
+        } else {
+            remember(category) { EmojiSearchEngine.emojisByCategory(category).map { it.emoji } }
         }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val gridWidth = maxWidth - padWidth
-        val columns = ((gridWidth / 48.dp).toInt()).coerceIn(3, 8)
-        val emojiFontSize = ((gridWidth / columns).value * 0.52f).sp
+        val columns = ((maxWidth / 48.dp).toInt()).coerceIn(3, 8)
+        val emojiFontSize = ((maxWidth / columns).value * 0.52f).sp
 
-        Row(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                            .height(32.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(horizontal = 8.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(14.dp),
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Box(modifier = Modifier.weight(1f)) {
-                        BasicTextField(
-                            value = query,
-                            onValueChange = {},
-                            readOnly = true,
-                            singleLine = true,
-                            textStyle = TextStyle(fontSize = 12.sp),
-                            modifier = Modifier.fillMaxWidth(),
-                            decorationBox = { innerTextField ->
-                                if (query.isEmpty()) {
-                                    Text(
-                                        text = "Search",
-                                        fontSize = 11.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    )
-                                }
-                                innerTextField()
-                            },
-                        )
-                    }
-                    if (query.isNotEmpty()) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier =
-                                Modifier
-                                    .size(22.dp)
-                                    .clickable {
-                                        if (vibrateOnTap) {
-                                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                        }
-                                        onQueryChange("")
-                                    },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Close,
-                                contentDescription = "Clear search",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(14.dp),
-                            )
-                        }
-                    }
-                }
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(26.dp)
-                            .padding(horizontal = 6.dp),
-                ) {
-                    if (showingSearch) {
-                        item(key = "search-tab") {
-                            CategoryChip(label = "Results (${results.size})", selected = true, onClick = {})
-                        }
-                    } else {
-                        items(orderedCategories, key = { it.name }) { cat ->
-                            CategoryChip(
-                                label = cat.label,
-                                selected = cat == category,
-                                onClick = { category = cat },
-                            )
-                        }
-                    }
-                }
-                if (gridItems.isEmpty()) {
-                    Text(
-                        text =
-                            if (showingSearch) {
-                                "No emojis found"
-                            } else if (category == EmojiCategory.RECENTS) {
-                                "No recent emojis yet"
-                            } else {
-                                "No emojis available"
-                            },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(columns),
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 48.dp)
-                                .weight(1f),
-                    ) {
-                        items(gridItems, key = { it }) { emoji ->
-                            TextButton(onClick = { onEmojiPicked(emoji) }) {
-                                Text(text = emoji, fontSize = emojiFontSize, maxLines = 1)
-                            }
-                        }
-                    }
-                }
-            }
-            Column(
+        Column(modifier = Modifier.fillMaxSize()) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 modifier =
                     Modifier
-                        .width(padWidth)
-                        .fillMaxHeight(),
+                        .fillMaxWidth()
+                        .height(32.dp)
+                        .padding(start = 6.dp, end = 6.dp, top = 6.dp),
             ) {
-                searchPad()
+                items(orderedCategories, key = { it.name }) { cat ->
+                    CategoryChip(
+                        label = cat.label,
+                        selected = cat == category,
+                        onClick = { category = cat },
+                    )
+                }
+            }
+            if (gridItems.isEmpty()) {
+                Text(
+                    text =
+                        if (category == EmojiCategory.RECENTS) {
+                            "No recent emojis yet"
+                        } else {
+                            "No emojis available"
+                        },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(16.dp),
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .weight(1f),
+                ) {
+                    items(gridItems, key = { it }) { emoji ->
+                        TextButton(onClick = { onEmojiPicked(emoji) }) {
+                            Text(text = emoji, fontSize = emojiFontSize, maxLines = 1)
+                        }
+                    }
+                }
             }
         }
     }
