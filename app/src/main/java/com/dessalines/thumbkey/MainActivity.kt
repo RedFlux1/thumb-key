@@ -38,7 +38,6 @@ import com.dessalines.thumbkey.ui.theme.ThumbkeyTheme
 import com.dessalines.thumbkey.utils.ANIMATION_SPEED
 import com.dessalines.thumbkey.utils.getImeNames
 import com.dessalines.thumbkey.utils.getVersionCode
-import org.woheller69.freeDroidWarn.FreeDroidWarn
 import splitties.systemservices.inputMethodManager
 
 class ThumbkeyApplication : Application() {
@@ -60,8 +59,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        FreeDroidWarn.showWarningOnUpgrade(this, getVersionCode())
-
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 

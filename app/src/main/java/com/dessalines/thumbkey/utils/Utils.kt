@@ -1,6 +1,5 @@
 package com.dessalines.thumbkey.utils
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
@@ -31,7 +30,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -57,6 +55,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.milliseconds
 
 const val TAG = "com.thumbkey"
 
@@ -236,6 +235,7 @@ fun fontSizeVariantToFontSize(
     val divFactor =
         when (fontSizeVariant) {
             FontSizeVariant.LARGE -> 2.5f
+            FontSizeVariant.MEDIUM -> 3.5f
             FontSizeVariant.SMALL -> 5f
             FontSizeVariant.SMALLEST -> 8f
         }
@@ -405,12 +405,14 @@ fun performKeyAction(
     onToggleEmojiMode: (enable: Boolean) -> Unit,
     onToggleClipboardMode: (enable: Boolean) -> Unit,
     onEmojiSearchInput: (text: String) -> Unit,
+    onToggleSketchMode: (enable: Boolean) -> Unit,
     onToggleCapsLock: () -> Unit,
     onToggleHideLetters: () -> Unit,
     onAutoCapitalize: (enable: Boolean) -> Unit,
     onSwitchLanguage: () -> Unit,
     onChangePosition: ((old: KeyboardPosition) -> KeyboardPosition) -> Unit,
-    onKeyEvent: () -> Unit,
+    onKeyEvent: (action: KeyAction) -> Unit,
+    onSketchAction: (action: KeyAction.Sketch) -> Unit = {},
     activeModifiers: Int = 0,
 ) {
     when (action) {
@@ -450,7 +452,7 @@ fun performKeyAction(
                         ime.sendDownUpKeyEvents(fnKeyCode)
                     }
                     ime.ignoreNextCursorMove()
-                    onKeyEvent()
+                    onKeyEvent(action)
                     return
                 }
             }
@@ -467,13 +469,13 @@ fun performKeyAction(
                     ime.sendDownUpKeyEvents(keyCode)
                 }
                 ime.ignoreNextCursorMove()
-                onKeyEvent()
+                onKeyEvent(action)
             } else if (text.length == 1 && charToKeyCode(text[0]) != KeyEvent.KEYCODE_UNKNOWN && ic == null) {
                 // Single char, no IC: send as key event
                 val keyCode = charToKeyCode(text[0])
                 Log.d(TAG, "sending key event without IC: keyCode=$keyCode")
                 ime.sendDownUpKeyEvents(keyCode)
-                onKeyEvent()
+                onKeyEvent(action)
             } else if (ic != null) {
                 // Plain text commit via InputConnection
                 ime.ignoreNextCursorMove()
@@ -493,6 +495,7 @@ fun performKeyAction(
             } else { // To return to MAIN mode after a shifted key action.
                 onAutoCapitalize(false)
             }
+            onKeyEvent(action)
         }
 
         is KeyAction.SendEvent -> {
@@ -522,7 +525,7 @@ fun performKeyAction(
             } else {
                 ime.sendDownUpKeyEvents(modifiedEvent.keyCode)
             }
-            onKeyEvent()
+            onKeyEvent(action)
         }
 
         // Some apps are having problems with delete key events, and issues need to be opened up
@@ -536,6 +539,12 @@ fun performKeyAction(
             } else {
                 ime.sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
             }
+        }
+
+        is KeyAction.DeleteCharacterAfterCursor -> {
+            val ev = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_FORWARD_DEL)
+            keyboardSettings.textProcessor?.handleKeyEvent(ime, ev)
+                ?: ime.currentInputConnection.sendKeyEvent(ev)
         }
 
         // Alternative delete that uses deleteSurroundingText instead of KEYCODE_DEL.
@@ -664,6 +673,11 @@ fun performKeyAction(
             val textBeforeCursor = ime.currentInputConnection.getTextBeforeCursor(1, 0)?.toString() ?: ""
             val textNew = if (textBeforeCursor.matches(Regex("\\S"))) action.end else action.start
             ime.currentInputConnection.commitText(textNew, 1)
+        }
+
+        is KeyAction.StartComposeCombo -> {
+            Log.d(TAG, "starting compose combo")
+            keyboardSettings.textProcessor?.handleComposeStart(ime)
         }
 
         is KeyAction.ComposeLastKey -> {
@@ -1463,6 +1477,17 @@ fun performKeyAction(
             onEmojiSearchInput(action.text)
         }
 
+        is KeyAction.ToggleSketchMode -> {
+            val enable = action.enable
+            Log.d(TAG, "Toggling Sketch: $enable")
+            keyboardSettings.textProcessor?.handleFinishInput(ime)
+            onToggleSketchMode(enable)
+        }
+
+        is KeyAction.Sketch -> {
+            onSketchAction(action)
+        }
+
         KeyAction.GotoSettings -> {
             val mainActivityIntent = Intent(ime, MainActivity::class.java)
             mainActivityIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -1667,9 +1692,39 @@ fun performKeyAction(
         }
 
         KeyAction.SwitchIME -> {
-            val imeManager =
-                ime.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imeManager.showInputMethodPicker()
+            when (ime.switchImeMode()) {
+                ImeSwitchMode.Picker -> {
+                    val imeManager =
+                        ime.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imeManager.showInputMethodPicker()
+                }
+
+                ImeSwitchMode.Previous -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        ime.switchToPreviousInputMethod()
+                    } else {
+                        ime.window.window?.attributes?.token?.let { token ->
+                            val imeManager =
+                                ime.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            @Suppress("DEPRECATION")
+                            imeManager.switchToLastInputMethod(token)
+                        }
+                    }
+                }
+
+                ImeSwitchMode.Next -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        ime.switchToNextInputMethod(false)
+                    } else {
+                        ime.window.window?.attributes?.token?.let { token ->
+                            val imeManager =
+                                ime.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            @Suppress("DEPRECATION")
+                            imeManager.switchToNextInputMethod(token, false)
+                        }
+                    }
+                }
+            }
         }
 
         KeyAction.SwitchIMEVoice -> {
@@ -1776,7 +1831,7 @@ fun getCurrentLayoutColumnCount(keyboardLayout: Int): Int {
     val keyboardDefinition = currentLayout.keyboardDefinition
     val mainKeyboard = keyboardDefinition.modes.main
     val columnCount = mainKeyboard.arr.maxOf { it.size }
-    return columnCount.toInt()
+    return columnCount
 }
 
 fun getCurrentDisplayWidth(ctx: Context): Int {
@@ -1798,7 +1853,7 @@ fun getAutoKeyWidth(
             else -> 1
         }
     val columns = getCurrentLayoutColumnCount(keyboardLayout) * multiplier
-    return (availableWidth / columns).toInt()
+    return (availableWidth / columns)
 }
 
 private fun autoCapitalize(
@@ -1920,7 +1975,7 @@ fun nextWordAfterCursor(ime: IMEService) {
 fun selectLineWithCursor(ime: IMEService) {
     // Find line start
     val wordsBeforeCursor = ime.currentInputConnection.getTextBeforeCursor(9999, 0)
-    if (wordsBeforeCursor?.length ?: 0 != 0) {
+    if ((wordsBeforeCursor?.length ?: 0) != 0) {
         // If we are at the beginning of a line nothing to do, else
         val lastChar = wordsBeforeCursor?.last() ?: ' '
         if (!(lastChar == '\n' || lastChar == '\r')) {
@@ -1957,13 +2012,17 @@ fun doneKeyAction(
 ) {
     pressed.value = false
     scope.launch {
-        delay(animationHelperSpeed.toLong())
+        delay(animationHelperSpeed.toLong().milliseconds)
         releasedKey.value = null
     }
     releasedKey.value =
         when (action) {
             is KeyAction.CommitText -> {
                 action.text
+            }
+
+            is KeyAction.Sketch.CommitCandidate -> {
+                action.displayText
             }
 
             else -> {

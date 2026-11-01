@@ -15,14 +15,14 @@ kotlin {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.dessalines.thumbkey"
         minSdk = 24
-        targetSdk = 36
-        versionCode = 184
-        versionName = "5.3.1"
+        targetSdk = 37
+        versionCode = 190
+        versionName = "5.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -123,6 +123,9 @@ dependencies {
 
     // Markdown
     implementation("com.github.jeziellago:compose-markdown:0.7.2")
+
+    // On-device handwriting recognition for sketch mode
+    implementation("io.github.toldry:glyphsketch:0.1.1")
 
     // Preferences
     implementation("me.zhanghai.compose.preference:library:1.1.1")

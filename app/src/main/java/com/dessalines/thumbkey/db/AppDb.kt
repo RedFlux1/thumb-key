@@ -49,6 +49,7 @@ const val DEFAULT_HIDE_LETTERS = 0
 const val DEFAULT_HIDE_SYMBOLS = 0
 const val DEFAULT_KEY_BORDERS = 1
 const val DEFAULT_SPACEBAR_MULTITAPS = 1
+const val DEFAULT_SWITCH_TO_LETTERS_AFTER_SPACE = 0
 const val DEFAULT_SLIDE_SENSITIVITY = 9
 const val DEFAULT_SLIDE_ENABLED = 0
 const val DEFAULT_SLIDE_CURSOR_MOVEMENT_MODE = 0
@@ -79,6 +80,7 @@ const val DEFAULT_USE_PRIVATE_CLIPBOARD = 0
 const val DEFAULT_SHOW_ON_SCREEN_KEYBOARD = 0
 const val DEFAULT_FLOATING_MODE_ENABLED = 0
 const val DEFAULT_PERSISTENT_FLOATING_ENABLED = 0
+const val DEFAULT_SWITCH_IME_MODE = 0
 
 @Entity
 data class AppSettings(
@@ -356,6 +358,16 @@ data class AppSettings(
         defaultValue = DEFAULT_PERSISTENT_FLOATING_ENABLED.toString(),
     )
     val persistentFloatingEnabled: Int,
+    @ColumnInfo(
+        name = "switch_to_letters_after_space",
+        defaultValue = DEFAULT_SWITCH_TO_LETTERS_AFTER_SPACE.toString(),
+    )
+    val switchToLettersAfterSpace: Int = DEFAULT_SWITCH_TO_LETTERS_AFTER_SPACE,
+    @ColumnInfo(
+        name = "switch_ime_mode",
+        defaultValue = DEFAULT_SWITCH_IME_MODE.toString(),
+    )
+    val switchImeMode: Int = DEFAULT_SWITCH_IME_MODE,
 )
 
 data class LayoutsUpdate(
@@ -484,6 +496,8 @@ data class BehaviorUpdate(
     val autoCapitalize: Int,
     @ColumnInfo(name = "spacebar_multitaps")
     val spacebarMultiTaps: Int,
+    @ColumnInfo(name = "switch_to_letters_after_space")
+    val switchToLettersAfterSpace: Int = DEFAULT_SWITCH_TO_LETTERS_AFTER_SPACE,
     @ColumnInfo(name = "drag_return_enabled")
     val dragReturnEnabled: Int,
     @ColumnInfo(name = "circular_drag_enabled")
@@ -496,6 +510,8 @@ data class BehaviorUpdate(
     val ghostKeysEnabled: Int,
     @ColumnInfo(name = "slide_hold_enabled")
     val slideHoldEnabled: Int,
+    @ColumnInfo(name = "switch_ime_mode")
+    val switchImeMode: Int = DEFAULT_SWITCH_IME_MODE,
 )
 
 data class KeyModificationsUpdate(
@@ -713,7 +729,7 @@ class AppSettingsRepository(
 }
 
 @Database(
-    version = 34,
+    version = 36,
     entities = [AppSettings::class, FloatingModeConfig::class],
     exportSchema = true,
 )
@@ -738,6 +754,8 @@ abstract class AppDB : RoomDatabase() {
                             "thumbkey",
                         ).allowMainThreadQueries()
                         .addMigrations(
+                            MIGRATION_35_36,
+                            MIGRATION_34_35,
                             MIGRATION_33_34,
                             MIGRATION_32_33,
                             MIGRATION_30_31,
@@ -770,6 +788,8 @@ abstract class AppDB : RoomDatabase() {
                             MIGRATION_24_25,
                             MIGRATION_25_26,
                             MIGRATION_26_27,
+                            MIGRATION_27_28,
+                            MIGRATION_28_29,
                         )
                         // Necessary because it can't insert data on creation
                         .addCallback(

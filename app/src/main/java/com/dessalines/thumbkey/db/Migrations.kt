@@ -380,3 +380,23 @@ val MIGRATION_32_33 =
             )
         }
     }
+
+// Migrations 34->36 carry the upstream columns introduced after this fork diverged.
+// The fork's own chain ends at 34, so upstream's schema changes are renumbered.
+val MIGRATION_34_35 =
+    object : Migration(34, 35) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE AppSettings ADD COLUMN switch_to_letters_after_space INTEGER NOT NULL DEFAULT $DEFAULT_SWITCH_TO_LETTERS_AFTER_SPACE",
+            )
+        }
+    }
+
+val MIGRATION_35_36 =
+    object : Migration(35, 36) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE AppSettings ADD COLUMN switch_ime_mode INTEGER NOT NULL DEFAULT $DEFAULT_SWITCH_IME_MODE",
+            )
+        }
+    }

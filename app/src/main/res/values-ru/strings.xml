@@ -143,4 +143,26 @@
     <string name="slide_hold_enable">Перемещение курсора свайпом с удержанием</string>
     <string name="slide_hold_description">Свайп с удержанием для непрерывного перемещения курсора, свайп с возвратом и удержанием — для перемещения по словам. Backspace: свайп с удержанием для непрерывного удаления, свайп с возвратом и удержанием — для удаления по словам.</string>
     <string name="database_operation_failed">Ошибка операции: %1$s</string>
+    <string name="switch_to_letters_after_space_description">Возвращение к буквенной раскладке после пробела в цифровой</string>
+    <string name="switch_to_letters_after_space">Возвращаться к буквам после пробела</string>
+    <string name="search_layouts">Поиск раскладок</string>
+    <string name="clear_search">Очистить поиск</string>
+    <string name="no_layouts_found">Раскладки не найдены</string>
+    <string name="sketch_hint">Нарисуйте символ. Коснитесь или смахните по клавише ниже для ввода. Удерживайте или смахните с возвратом, чтобы увидеть похожие.</string>
+    <string name="sketch_loading">Загрузка распознавания рукописного ввода…</string>
+    <string name="sketch_load_failed">Не удалось загрузить распознавание рукописного ввода</string>
+    <string name="sketch_look_alikes">Похожие на %1$s %2$d</string>
+    <string name="sketch_back">Назад</string>
+    <string name="sketch_all_candidates">Все варианты %1$d</string>
+    <string name="sketch_key_position">Клавиша %1$d %2$s</string>
+    <string name="sketch_search_hint">Поиск</string>
+    <string name="sketch_clear_search">Очистить поиск</string>
+    <string name="sketch_no_matches">Нет подходящих вариантов</string>
+    <string name="handwriting_recognition">Распознавание рукописного ввода</string>
+    <string name="handwriting_recognition_summary">В режиме рисования символы распознаются с помощью glyphsketch прямо на устройстве.</string>
+    <string name="ime_switch_mode">Переключение способов ввода</string>
+    <string name="ime_switch_mode_picker">Показать меню выбора способа ввода</string>
+    <string name="ime_switch_mode_previous">Переключаться на последний использованный</string>
+    <string name="ime_switch_mode_next">Переключаться на следующий в списке</string>
+    <string name="magma">Магма</string>
 </resources>

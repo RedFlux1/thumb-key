@@ -47,6 +47,7 @@ import com.dessalines.thumbkey.ui.theme.ThumbkeyTheme
 import com.dessalines.thumbkey.utils.KeyboardMode
 import com.dessalines.thumbkey.utils.KeyboardPosition
 import com.dessalines.thumbkey.utils.keyboardLayoutsSetFromDbIndexString
+import com.dessalines.thumbkey.utils.resolveKeyboardDefinition
 import com.dessalines.thumbkey.utils.toBool
 import com.dessalines.thumbkey.utils.toInt
 import kotlinx.coroutines.launch
@@ -95,7 +96,7 @@ class ComposeKeyboardView(
                                     ?.textProcessor
                                     ?.handleFinishInput(ctx)
                                 ctx.currentKeyboardDefinition =
-                                    layouts[nextIndex].keyboardDefinition
+                                    resolveKeyboardDefinition(layout, s.keyModifications)
                                 ctx.currentKeyboardDefinition
                                     ?.settings
                                     ?.textProcessor

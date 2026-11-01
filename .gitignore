@@ -24,3 +24,4 @@ key-modifications.yaml
 test_window.kt
 test_window2.kt
 .zcode/
+deploy_to_device.sh

@@ -28,7 +28,6 @@
   <p align="center">
     <a href="https://apt.izzysoft.de/fdroid/index/apk/com.dessalines.thumbkey"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80"></a>
     <a href="https://f-droid.org/packages/com.dessalines.thumbkey"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80"></a>
-    <a href="https://play.google.com/store/apps/details?id=com.dessalines.thumbkey"><img src="https://cdn.rawgit.com/steverichey/google-play-badge-svg/master/img/en_get.svg" alt="Get it on the Google play store" height="80"></a>
     <a href="https://github.com/dessalines/thumb-key/releases/latest"><img src="https://raw.githubusercontent.com/andOTP/andOTP/master/assets/badges/get-it-on-github.png" alt="Get it on Github" height="80"></a>
   </p>
 </p>
@@ -45,6 +44,9 @@
   - [Slide gestures](#slide-gestures)
   - [Drag-and-return](#drag-and-return)
   - [Ghost keys](#ghost-keys)
+  - [Accents and special characters](#accents-and-special-characters)
+    - [Dead keys](#dead-keys)
+    - [Compose combo](#compose-combo)
   - [Coming from MessagEase Keyboard Tips](#coming-from-messagease-keyboard-tips)
   - [Modify keys](#modify-keys)
     - [Example 1](#example-1)
@@ -56,6 +58,7 @@
   - [Clipboard](#clipboard)
     - [Clipboard history](#clipboard-history)
     - [Private clipboard](#private-clipboard)
+  - [Sketch mode](#sketch-mode)
   - [Other](#other)
 - [Thumb-Key Design](#thumb-key-design)
   - [A History of Phone Keyboards](#a-history-of-phone-keyboards)
@@ -111,6 +114,7 @@ This project is a follow-up to the now unmaintained (and closed-source) [MessagE
 - **Swipe right** to change keyboard position.
 - **Swipe down** to access IME switcher (switch between Thumb-key and other keyboards).
 - **Swipe left** to cycle between selected layouts (languages).
+- **Swipe to bottom-right** to open [sketch mode](#sketch-mode) and draw a character.
 - **Swipe to bottom-left** to toggle voice input. Requires [FUTO Voice Input](https://play.google.com/store/apps/details?id=org.futo.voiceinput), [Transcribro](https://github.com/soupslurpr/Transcribro), or [Whisper IME](https://github.com/woheller69/whisperIME).
 
 ### Symbols / Letters Key
@@ -151,6 +155,84 @@ Enabling `Backspace: Allow normal swipes to work with slide gestures`, in keyboa
 ### Ghost keys
 
 Enabling `Ghost keys` in keyboard settings will enable swiping hidden symbol keys without switching to the numeric layout.
+
+### Accents and special characters
+
+Layouts with `compose` in their name can build characters that have no key of their own. Two independent systems do this — dead keys, and a compose key. They are alternatives rather than replacements, and a layout may offer either or both.
+
+#### Dead keys
+
+A dead key modifies the character you have **just typed**. Type the base letter first, then swipe the dead key:
+
+| Type    | Result |
+| ------- | ------ |
+| `n` `~` | ñ      |
+| `s` `^` | ŝ      |
+| `a` `"` | ä      |
+| `s` `!` | ß      |
+
+Following a dead key with a space types the mark itself.
+
+Ten of them are accents: `"` `'` `` ` `` `^` `~` `°` `˘` `ˇ` `-` and, on Japanese layouts, `゛`. The remaining four produce characters that are not accented letters at all, and are easy to miss because their labels do not look like marks:
+
+| Key     | Produces                          | Examples                                               |
+| ------- | --------------------------------- | ------------------------------------------------------ |
+| `¿¡`    | ligatures and Spanish punctuation | `a`→æ, `o`→œ, `s`→ß, `c`→ç, `l`→ł, `!`→¡, `?`→¿, `<`→« |
+| `$`     | currency                          | `e`→€, `l`→£, `c`→¢, `y`→¥, `w`→₩                      |
+| `?` `*` | Vietnamese tone marks             | `a`→ả, `a`→ạ                                           |
+
+The `¿¡` key is labeled with the two characters it makes from `!` and `?`, and is the closest the original system comes to a general-purpose compose key. Its full contents, and those of every other dead key, are in `Utils.kt`.
+
+Dead keys are quick, but they have two costs. They can only ever combine two characters, so they cannot produce symbols that are not an accented letter. And a dead key makes its own symbol awkward to type: swiping `~` produces nothing on its own, and you have to follow it with a space to get a bare `~`.
+
+That trade is worth it for accents, which are rarely wanted as bare marks, and less so for `~`, `^`, `°` and `"`, which are often typed directly.
+
+Each layout strikes its own balance. `english messagease compose` offers the full set of dead keys. `english messagease compose combo` instead keeps eight dead keys for marks alone — grave, acute, circumflex, diaeresis, tilde, caron, breve and cedilla — grouped along the top edge of `A`, `N` and `I`, and drawn as `` ` `` `´` `ˆ` `¨` `˜` `ˇ` `˘` `¸` so they are visibly not the plain `~` and `^` that sit together on `T`. Everything else there goes through the compose key.
+
+#### Compose combo
+
+The compose key (`♫`) works like the compose key on a desktop Linux system. Press it **first**, then type a short sequence, which is replaced by a single character:
+
+| Type        | Result |
+| ----------- | ------ |
+| `♫` `o` `c` | ©      |
+| `♫` `s` `s` | ß      |
+| `♫` `-` `>` | →      |
+| `♫` `1` `2` | ½      |
+| `♫` `y` `=` | ¥      |
+| `♫` `°` `a` | å      |
+
+`♫` `.` `i` gives the Turkish dotless ı rather than a doubly dotted i, following X11; `♫` `.` `I` gives İ.
+
+Sequences follow the [X11 compose table](https://gitlab.freedesktop.org/xorg/lib/libx11/-/blob/master/nls/en_US.UTF-8/Compose.pre), so habits carry over from desktop Linux. Many characters have more than one spelling, and both orders usually work: © is `o` `c` or `c` `o`. The full list lives in `ComposeComboTable.kt`.
+
+Dashes are the one place Thumb-Key parts company with X11. The em dash is `♫` `-` `-` rather than the three-tap `---`, since it is the one people reach for most:
+
+| Type                       | Result |
+| -------------------------- | ------ |
+| `♫` `-` `-`                | —      |
+| `♫` `-` `m` or `♫` `m` `-` | —      |
+| `♫` `-` `n` or `♫` `n` `-` | –      |
+
+The `m` and `n` spellings are named after the printer's em and en, and give the en dash a spelling that does not depend on counting hyphens. The X11 `---` and `--.` do not work here: once `-` `-` resolves, nothing longer starting with it can be reached.
+
+Mathematical and technical characters are covered too:
+
+| Type        | Result | Type        | Result |
+| ----------- | ------ | ----------- | ------ |
+| `♫` `=` `=` | ≡      | `♫` `~` `~` | ≈      |
+| `♫` `!` `=` | ≠      | `♫` `<` `=` | ≤      |
+| `♫` `+` `-` | ±      | `♫` `>` `=` | ≥      |
+| `♫` `x` `x` | ×      | `♫` `-` `:` | ÷      |
+| `♫` `8` `8` | ∞      | `♫` `{` `}` | ∅      |
+| `♫` `/` `v` | √      | `♫` `m` `u` | µ      |
+| `♫` `.` `.` | …      | `♫` `.` `-` | ·      |
+
+The X11 spellings work too where they differ — `=` `_` for ≡, and `/` `=` or `=` `/` for ≠.
+
+Superscript and subscript digits use `^` and `_`, one sequence per digit, so ¹² is `♫` `^` `1` then `♫` `^` `2`.
+
+If your field needs characters that are not here, adding them is a few lines of data — see [Adding compose sequences](CONTRIBUTING.md#adding-compose-sequences) in the contributing guide.
 
 ### Coming from MessagEase Keyboard Tips
 
@@ -268,6 +350,7 @@ This swaps the 'switch language' and 'toggle emoji' actions on the top-right key
 - `ToggleABCMode`
 - `ToggleEmojiMode`
 - `ToggleClipboardMode`
+- `ToggleSketchMode`
 - `ToggleCapsLock`
 - `ToggleShiftModeTrue`
 - `ToggleShiftModeFalse`
@@ -290,15 +373,19 @@ This swaps the 'switch language' and 'toggle emoji' actions on the top-right key
 - `Undo`
 - `Redo`
 - `Delete`
+- `DeleteCharacterAfterCursor`
 - `DeleteWordBeforeCursor`
 - `DeleteWordAfterCursor`
 - `SwitchLanguage`
 - `SwitchIME`
 - `SwitchIMEVoice`
 - `HideKeyboard`
+- `StartComposeCombo` # The compose key. See [Compose combo](#compose-combo).
 - `Noop` # No operation. Does nothing.
 
 `keyAction` and `text` cannot be used together.
+
+`StartComposeCombo` works on any layout except the Korean ones, which already process their own input.
 
 #### Example 4
 
@@ -374,6 +461,22 @@ Note that using cut/copy/paste controls from outside the keyboard will use the s
 This ensures more privacy, as data added to the system clipboard can actually be accessed by any app.
 In some Android devices such as _samsung_ devices, it is also automatically retrieved and stored by a proprietary application, without any option to disable it.
 
+### Sketch mode
+
+Draw a character with your finger to type it: symbols, accented letters, and letters of other scripts that aren't on your keyboard. Recognition runs entirely on your phone, and nothing you draw leaves it.
+
+https://github.com/user-attachments/assets/1d702012-37f5-4b30-8811-3ee9aaf301b7
+
+- **Swipe to bottom-right** on the emoji key to open sketch mode.
+- Draw a character on the pad. After each stroke, the three keys below it fill with candidate characters.
+- **Tap** a key to type its center candidate, or _swipe_ for the radial characters.
+- **Long press** a key, or **swipe-return** on it, to see the characters that look like it, such as Latin `A`, Greek `Α` and Cyrillic `А`.
+- The undo key: **tap** to undo the last stroke, **swipe down** to clear the pad, and **swipe up** for a list of the 100 best candidate characters, with their names and code points. Search the list by name or code point.
+- Only characters your phone's fonts can show are suggested. Chinese, Japanese and Korean characters are currently not supported.
+- To put sketch mode on another key, use the `ToggleSketchMode` key action in [Modify keys](#modify-keys).
+
+Handwriting recognition is powered by [glyphsketch](https://github.com/Toldry/glyphsketch).
+
 ### Other
 
 - Practice typing, and check your words per minute, using [monkeytype.com](https://monkeytype.com)
@@ -424,7 +527,6 @@ MessagEase is unfortunately unmaintained, and Thumb-Key uses a better alternatin
 - [Releases](https://github.com/dessalines/thumb-key/releases)
 - [IzzyOnDroid](https://apt.izzysoft.de/fdroid/index/apk/com.dessalines.thumbkey)
 - [F-Droid](https://f-droid.org/en/packages/com.dessalines.thumbkey/)
-- [Google Play](https://play.google.com/store/apps/details?id=com.dessalines.thumbkey)
 
 ### Verifying Fingerprints
 

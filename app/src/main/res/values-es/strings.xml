@@ -71,6 +71,8 @@
     <string name="hide_letters">Ocultar letras</string>
     <string name="hide_symbols">Ocultar símbolos</string>
     <string name="spacebar_multitaps">Barra de espacio multitáctil</string>
+    <string name="switch_to_letters_after_space">Volver a las letras después de un espacio</string>
+    <string name="switch_to_letters_after_space_description">Vuelve al teclado de letras después de introducir un espacio en el modo numérico</string>
     <string name="done">Hecho</string>
     <string name="backdrop">Fondo de teclado</string>
     <string name="key_padding">Acolchado de teclas: %1$s</string>
@@ -143,4 +145,22 @@
     <string name="slide_hold_enable">Movimiento de deslizar y mantener pulsado el cursor</string>
     <string name="position_padding">Relleno de posición: %1$s</string>
     <string name="slide_hold_description">Deslizar y mantener presionado para repetir el movimiento del cursor, deslizar-volver-mantener para el movimiento de palabra. Retroceso: deslizar-mantener para repetir eliminar, deslizar-volver-mantener para eliminar palabras.</string>
+    <string name="clear_search">Limpiar búsqueda</string>
+    <string name="sketch_back">Atrás</string>
+    <string name="sketch_clear_search">Limpiar búsqueda</string>
+    <string name="search_layouts">Buscar diseños</string>
+    <string name="no_layouts_found">No se encontraron diseños</string>
+    <string name="sketch_hint">Dibuja un carácter. Toca o desliza el dedo sobre una de las teclas inferiores para escribir. Mantén pulsada la tecla o desliza el dedo y vuelve a ella para ver variantes similares.</string>
+    <string name="sketch_loading">Cargando el reconocimiento de escritura manual…</string>
+    <string name="sketch_load_failed">No se pudo cargar el reconocimiento de escritura a mano</string>
+    <string name="sketch_look_alikes">Parecidos de %1$s · %2$d</string>
+    <string name="sketch_all_candidates">Todas las candidatas · %1$d</string>
+    <string name="sketch_no_matches">Ninguna candidata coincide</string>
+    <string name="handwriting_recognition">Reconocimiento de escritura manual</string>
+    <string name="handwriting_recognition_summary">El modo de boceto reconoce caracteres mediante glyphsketch en el propio dispositivo.</string>
+    <string name="magma">Magma</string>
+    <string name="ime_switch_mode">Cambiando entre métodos de entrada</string>
+    <string name="ime_switch_mode_picker">Mostrar el selector de método de entrada</string>
+    <string name="ime_switch_mode_previous">Cambiar al último utilizado</string>
+    <string name="ime_switch_mode_next">Cambiar al siguiente de la lista</string>
 </resources>
