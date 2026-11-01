@@ -1,5 +1,12 @@
+## What's Changed in 5.3.1
+
+- feat(emoji): chips-only picker defaulting to Recents
+
+**Full Changelog**: https://github.com/dessalines/thumb-key/compare/5.3.0...5.3.1
+
 ## What's Changed in 5.3.0
 
+- chore(release): 5.3.0 gboard floating fork + emoji system
 - feat(emoji): full original-view set, 1700 emoji in 9 categories
 - feat(emoji): always show Recents tab, size pad column to keys
 - feat(emoji): compact search bar and category chips
